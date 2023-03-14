@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog</title>
+  <style>
+    body{
+      background-color: #3e3e3e;
+      color: #3fc3ee;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+    <H1>Products page</H1>
+    <span>This is the page where we are redirected after successful login</span>
+    <!--GET CAUSE CSRF IS DISABLED-->
+    <form class="form-signin" method="get" action="/logout">
+        <button type="submit" class="btn btn-lg btn-primary btn-block">Logout</button>
+    </form>
+</div>
+
+</body>
+</html>

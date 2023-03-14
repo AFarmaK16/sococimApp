@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import com.example.demo.enums.ApplicationUserRole;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.example.demo.enums.ApplicationUserPermission.*;
 import static com.example.demo.enums.ApplicationUserRole.*;
@@ -66,7 +69,11 @@ public class AppSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         //THE ORDER WE USE FOR REQUESTMATCHERS(ADMIN/CUSTOMER) MATTER
         http
-                .csrf().disable()
+               .csrf().disable() // if enabled logout method should be POST
+        /*
+        * In the logout we should then have
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout","POST"))
+        * */
                 .authorizeHttpRequests()
                 //NOTE THAT REQUESTMATCHERS CAN BE REPLACED WITH something like @PREAUTHORIZE(HASROLE(ROLE_ADMIN) :: OR /:: hasAuthority('customer:add')
 
@@ -74,13 +81,23 @@ public class AppSecurityConfig {
                 .requestMatchers(HttpMethod.GET,"/api/v1/customers/add").hasAuthority(ADD_CUSTOMER.getPermission())
                 .requestMatchers(HttpMethod.GET,"/api/v1/products/lists/**").hasAuthority(LIST_PRODUCTS.getPermission())
                 .requestMatchers("/api/**").hasRole(admin.name())
-                //For an enpoint with more than one roleUser use hasAnyRole
+                //For an endpoint with more than one roleUser use hasAnyRole
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic() //authebtication type
-
-
+                .formLogin() //authentication type
+               .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/products",true)
+                .and()
+                .rememberMe().tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)).key("somethingverysecured")
+                .and()
+                .logout()
+                .logoutUrl("/logout")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET"))
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID","remember-me")
+                .logoutSuccessUrl("/login")
 
                 ;
         return http.build();
