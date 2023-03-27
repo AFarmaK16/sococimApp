@@ -20,7 +20,7 @@ public class Customer {
     private Integer customerID;
     private String customerFirstName;
     private String customerLastName;
-    private CustomerType customerType;
+//    private CustomerType customerType;
     private String customerAddress;
     private String customerPhoneNumber;
     @OneToOne(cascade = CascadeType.ALL)

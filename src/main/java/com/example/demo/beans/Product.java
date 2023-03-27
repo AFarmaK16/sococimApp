@@ -18,7 +18,14 @@ public class Product {
     private Double product_price;
     private String product_label;
     private String product_type;
+    //TODO GAMME DE PRODUIT  OU TYPE
     private String product_description;
+    private String product_image;
+    
+/*
+APPARENTLY THEY HAVE MANY ORICE FOR PRODUCTS, AND MANY DESIGNATION TOO
+* devise
+* */
    /* @ManyToOne(fetch = FetchType.LAZY)
     private Orders order;*/
 

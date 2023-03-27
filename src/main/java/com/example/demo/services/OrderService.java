@@ -1,19 +1,14 @@
 package com.example.demo.services;
 
 
-import com.example.demo.beans.Customer;
-import com.example.demo.beans.OrderItems;
-import com.example.demo.beans.Orders;
-import com.example.demo.beans.Product;
+import com.example.demo.beans.*;
 import com.example.demo.controllers.OrderController;
-import com.example.demo.dao.CustomerRepository;
-import com.example.demo.dao.OrderItemRepository;
-import com.example.demo.dao.OrderRepository;
-import com.example.demo.dao.ProductRepository;
+import com.example.demo.dao.*;
 import com.example.demo.enums.OrderStatus;
+import com.example.demo.enums.PaymentStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -22,12 +17,14 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private  final ProductRepository productRepository;
+    private final FactureRepository factureRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository, ProductRepository productRepository) {
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository, ProductRepository productRepository, FactureRepository factureRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
+        this.factureRepository = factureRepository;
     }
 
     //CREATE DONE😋❌CUSTOMER/ADMIN
@@ -45,11 +42,24 @@ public class OrderService {
     public void createOrders(OrderController.OrderRequest orderRequest) {
         //Retrieve the customer from database
         Customer customer = customerRepository.findById(orderRequest.customerID()).get();
-      Orders orders = new Orders();
-      orders.setCustomer(customer);
-      orders.setOrder_status(OrderStatus.valueOf(OrderStatus.ATTENTE.name()));
-      orders.setOrder_Amount(orderRequest.order_Amount());
-        List<OrderItems> items = new ArrayList<>();
+        Facture facture = new Facture();
+        Orders orders = new Orders();
+        orders.setCustomer(customer);
+        orders.setOrder_status(OrderStatus.valueOf(OrderStatus.ATTENTE.name()));
+        orders.setOrder_Amount(orderRequest.order_Amount());
+        facture.setJustificatif(null);
+//        facture.setJustificatif(orderRequest.facture().justificatif());
+//      try{
+//          byte[] payment_justificatif = orderRequest.facture().payment_justificatif().getBytes();
+//      }
+//      catch (IOException io){
+//          System.out.println(io.getMessage());
+//      }
+       // facture.setOrder(orders);
+        orders.setFacture(facture);
+        facture.setPaymentStatus(PaymentStatus.ENCOURS);
+     //   List<OrderItems> items = new ArrayList<>();
+        factureRepository.save(facture);
         orderRepository.save(orders);
 
         for (OrderController.OrderItemRequest item : orderRequest.items()) {
@@ -61,7 +71,7 @@ public class OrderService {
             orderItems.setOrder(orders);
             orderItemRepository.save(orderItems);
             //Add the order item to the lists of order items
-            items.add(orderItems);
+          //  items.add(orderItems);
 
         }
         //Set the order items on the order entity

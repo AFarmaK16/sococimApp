@@ -5,6 +5,7 @@ import com.example.demo.beans.Customer;
 import com.example.demo.beans.OrderItems;
 import com.example.demo.beans.Orders;
 import com.example.demo.enums.OrderStatus;
+import com.example.demo.enums.PaymentStatus;
 import com.example.demo.services.OrderService;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.FetchType;
@@ -14,11 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/orders/")
 public class OrderController {
@@ -34,45 +37,9 @@ public class OrderController {
        //TODO YOU'LL GET THE CUSTOMER INFORMATION FROM AUTHENTIFICATION AFTER
         //TODO ADD LE CHAMP POUR JUSTIFICATIF(Look For best way to store it)
 
-      /*  Account account = new Account();
-        account.setDateOuverture(new Date());
-        account.setRole(orderRequest.customer.getAccount().getRole());
-        account.setLogin(orderRequest.customer.getAccount().getLogin());
-        account.setPassword(orderRequest.customer.getAccount().getPassword());
-        account.setUserRefID(orderRequest.customer.getAccount().getUserRefID());
-        Customer c = new Customer();
-
-        c.setCustomerFirstName(orderRequest.customer.getCustomerFirstName());
-        c.setCustomerLastName(orderRequest.customer.getCustomerLastName());
-        c.setCustomerType(orderRequest.customer.getCustomerType());
-        c.setCustomerPhoneNumber(orderRequest.customer.getCustomerPhoneNumber());
-        c.setCustomerAddress(orderRequest.customer.getCustomerAddress());
-        c.setAccount(account);*/
-       // String customerID = principal.getName();
-
-        System.out.println(orderRequest);
+         System.out.println(orderRequest);
          orderService.createOrders(orderRequest);
-        //Orders orders = orderService.createOrders(orderRequest);
-        //Orders orders = orderService.createOrders(customerID,orderRequest);
-/*
-        orders.setOrder_Date(new Date());
-        orders.setOrder_Amount(orderRequest.order_Amount);
-        orders.setOrder_status(OrderStatus.ATTENTE);
-        orders.setCustomer(c);
 
-
-        orderService.createOrders(orders);*/
-
-     /*
-     Signature will be
-     public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderrequest, Authentification authentication)
-     //   According to chat
-        //Retrieve the authenticated customer
-        Customer c = (Customer)authentication.getPrincipal();
-        orders.setCustomerRef(c);
-        //Return response indicating success
-        return ResponseEntity.ok().build();
-         */
 
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -108,11 +75,17 @@ public class OrderController {
            // Customer customer
             //
             Integer customerID,
-            List<OrderItemRequest> items
+            List<OrderItemRequest> items,
+            FactureRequest facture
 
     ) {};
     public record OrderItemRequest(
     Integer productId,
     Integer quantity
+    ){}
+    public record FactureRequest(
+            String justificatif,
+//            MultipartFile payment_justificatif,
+            PaymentStatus paymentStatus
     ){}
 }

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin // ⚡⚡⚡⚡⚡⚡ TODO : enlever ou restreindre le CORS
 @RestController
 @RequestMapping("/api/v1/products/")
 public class ProductController {
@@ -19,16 +19,18 @@ public class ProductController {
     }
     @PostMapping("/add")
     public void addProduct(@RequestBody ProductRequest productRequest){
+    System.out.println(productRequest);
         Product p = new Product();
         p.setProduct_label(productRequest.product_label);
         p.setProduct_price(productRequest.product_price);
         p.setProduct_type(productRequest.product_type);
         p.setProduct_description(productRequest.product_description);
+        p.setProduct_image(null);
         productService.addProduct(p);
     }
 
     @GetMapping("/lists")
-    public List<Product> getCustomers(){
+    public List<Product> getProducts(){
 
        /* product.add(new CustomerRequest(1,"Awa","Kane","Dubai","772097634"));
         product.add(new CustomerRequest(2,"Zaid","Kane","Guediawaye","77207634"));

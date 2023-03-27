@@ -14,7 +14,7 @@ import java.util.List;
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
-
+//TODO Veillez a ne pas afficher le password d'un customer ou de n'importe quel utilisateur
     //READ [ALL]-😋 ❌ ADMIN
     public List<Customer> getAllCustomers(){
         return customerRepository.findAll();

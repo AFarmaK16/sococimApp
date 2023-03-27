@@ -8,13 +8,11 @@ import com.example.demo.services.CustomerService;
 import com.example.demo.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-//TODO rename to CustomerController  after
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/customers/")
 public class CustomerController {
@@ -53,7 +51,7 @@ public class CustomerController {
 
         c.setCustomerFirstName(customerRequest.customerFirstName);
         c.setCustomerLastName(customerRequest.customerLastName);
-        c.setCustomerType(CustomerType.COMPTANT);
+//        c.setCustomerType(CustomerType.COMPTANT);
         c.setCustomerPhoneNumber(customerRequest.customerPhoneNumber);
         c.setCustomerAddress(customerRequest.customerAddress);
         c.setAccount(account);
@@ -80,10 +78,10 @@ public class CustomerController {
              String customerFirstName,
              String customerLastName,
              String customerAddress,
-             CustomerType customerType,
+//             CustomerType customerType,
              String customerPhoneNumber,
              Account account
                           ) {
 
-    };
+    }
 }

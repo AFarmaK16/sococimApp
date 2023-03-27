@@ -3,9 +3,6 @@ package com.example.demo.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -13,13 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import com.example.demo.enums.ApplicationUserRole;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.concurrent.TimeUnit;
-
-import static com.example.demo.enums.ApplicationUserPermission.*;
 import static com.example.demo.enums.ApplicationUserRole.*;
 @Configuration
 @EnableWebSecurity
@@ -56,7 +48,7 @@ public class AppSecurityConfig {
                 .username("abk")
                 .password(passwordEncoder.encode("passer"))
                // .roles(deliver.name())// ROLE_DELIVER
-                  .authorities(deliver.getGrantedAuthorities())
+                  .authorities(commercial.getGrantedAuthorities())
 
                 .build();
     return new InMemoryUserDetailsManager(adjaUser,zaidUser,deliverUser);
@@ -78,15 +70,21 @@ public class AppSecurityConfig {
                 //NOTE THAT REQUESTMATCHERS CAN BE REPLACED WITH something like @PREAUTHORIZE(HASROLE(ROLE_ADMIN) :: OR /:: hasAuthority('customer:add')
 
                 //BUT FOR THIS WILL NEED TO ADD ****** , by the way it is deprecated, look for equivalent
-                .requestMatchers(HttpMethod.GET,"/api/v1/customers/add").hasAuthority(ADD_CUSTOMER.getPermission())
-                .requestMatchers(HttpMethod.GET,"/api/v1/products/lists/**").hasAuthority(LIST_PRODUCTS.getPermission())
-                .requestMatchers("/api/**").hasRole(admin.name())
+//    /            .requestMatchers(HttpMethod.GET,"/api/v1/customers/add").hasAuthority(ADD_CUSTOMER.getPermission())
+//    /            .requestMatchers(HttpMethod.GET,"/api/v1/products/lists/**").hasAuthority(LIST_PRODUCTS.getPermission())
+//    /            .requestMatchers("/api/**").hasRole(admin.name())
                 //For an endpoint with more than one roleUser use hasAnyRole
                 .anyRequest()
-                .authenticated()
+//     /           .authenticated()
+                .permitAll()//delete this one
                 .and()
-                .formLogin() //authentication type
-               .loginPage("/login").permitAll()
+                .httpBasic()
+               /*.formLogin()
+                .loginPage("/login").permitAll()*/
+                //.loginProcessingUrl("/api/v1/login")
+
+        //authentication type
+               /*.loginPage("/login").permitAll()
                 .defaultSuccessUrl("/products",true)
                 .and()
                 .rememberMe().tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)).key("somethingverysecured")
@@ -97,7 +95,7 @@ public class AppSecurityConfig {
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID","remember-me")
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/login")*/
 
                 ;
         return http.build();

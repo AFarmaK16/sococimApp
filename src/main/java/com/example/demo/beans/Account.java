@@ -1,5 +1,6 @@
 package com.example.demo.beans;
 
+import com.example.demo.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,10 @@ public class Account {
     private Integer idAccount;
     private String login;
     private  String password;
-    private  String role;
+    private RoleType role;
     private Date dateOuverture = new Date();
     private int userRefID;
+    //Will be used to enable or disable an account rather than deleting it
+   // private boolean enabled = true;
+    //TODO FOR ADMIN - COMMERCIAL : EMAIL, ACCESSCODE, type (admin ou non )
 }

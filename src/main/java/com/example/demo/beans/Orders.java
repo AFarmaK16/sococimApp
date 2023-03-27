@@ -26,6 +26,8 @@ public class Orders {
    private Integer customerRef;
     @ManyToOne(fetch = FetchType.EAGER)
     private Customer customer;
+    @OneToOne(fetch = FetchType.EAGER)
+    private Facture facture;
 
    @OneToMany(mappedBy = "order",cascade =CascadeType.ALL)
     private List<OrderItems> orderItems;
