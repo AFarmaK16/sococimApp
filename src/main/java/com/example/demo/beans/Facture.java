@@ -23,7 +23,7 @@ public class Facture {
 //TODO Ajouter un atttribut pour renommer le justificatif sous forme de CUSTOMERNAME_ORDERID_"JUSTIF"
 @Lob
     private byte [] justificatif;
-//    private String justificatif;
+    private String justificatifURI;
 
     //    @Lob
 //    private  byte [] payment_justification;

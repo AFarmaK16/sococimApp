@@ -1,35 +1,38 @@
 package com.example.demo.controllers;
 
-import com.example.demo.beans.Account;
 import com.example.demo.beans.Customer;
-import com.example.demo.beans.OrderItems;
 import com.example.demo.beans.Orders;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
+import com.example.demo.services.CustomerService;
 import com.example.demo.services.OrderService;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.servlet.http.HttpServletRequest;
+import jdk.jfr.ContentType;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.thymeleaf.util.ContentTypeUtils;
+import org.thymeleaf.util.StringUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
-import java.security.Principal;
+import java.nio.file.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -38,27 +41,44 @@ import java.util.List;
 @RequestMapping("/api/v1/orders/")
 public class OrderController {
     private final OrderService orderService;
+    private final CustomerService customerService;
 
     @Autowired
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, CustomerService customerService) {
         this.orderService = orderService;
+        this.customerService = customerService;
     }
 
 
     @PostMapping(value = "/add",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    private Orders addOrder(@ModelAttribute("orderRequest") OrderRequest orderRequest,
-                                       @RequestParam("justificatif") MultipartFile justificatif,
-                                       @RequestParam("items") String items
-
-    ) throws  IOException {
+    private ResponseEntity<?> addOrder(@ModelAttribute("orderRequest") OrderRequest orderRequest, @RequestParam("justificatif") MultipartFile justificatif, @RequestParam("items") String items) throws  IOException {
        //TODO YOU'LL GET THE CUSTOMER INFORMATION FROM AUTHENTIFICATION AFTER
         //TODO ADD LE CHAMP POUR JUSTIFICATIF(Look For best way to store it)
-//1.CHECK IF IMAGE IS NOT EMPTY
+
+        //1.CHECK IF IMAGE IS NOT EMPTY
+        if(justificatif.isEmpty()){
+            throw new IllegalStateException("Can't upload emty file ["+justificatif.getSize()+"]");
+        }
         //2.If file is an image
+//        if (!Arrays.asList("IMAGE_JPEG","IMAGE_PNG","IMAGE_GIF").contains(justificatif.getContentType())){
+//            throw new IllegalStateException("FILE MUST BE AN IMAGE");
+//        }
         //3.If user exist
-        //grab some metadata from file if any
+        //4.grab some metadata from file if any
         //Store the image
 
+
+
+        String uploadDir = System.getProperty("user.dir")+"/justificatifs";
+        File dir = new File(uploadDir);
+        if(!dir.exists()){
+            dir.mkdir();
+        }
+        Customer customer = customerService.getCustomer(orderRequest.customerID);
+
+
+
+        //        String fileName = StringUtils.cleanPath(justificatif.getOriginalFilename());
 
 
          System.out.println(orderRequest);
@@ -70,14 +90,51 @@ public class OrderController {
         List<OrderItemRequest> itemsList = mapper.readValue(items, new TypeReference<List<OrderItemRequest>>() {
         });
         System.out.println(itemsList);
-        return  orderService.createOrders(orderRequest, justificatif
-                 ,itemsList
-         );
+        Orders savedOrder = orderService.createOrders(orderRequest, justificatif
+                ,itemsList
+        );
+        Integer factureID = savedOrder.getFacture().getFacture_id();
+        String fileExtension = justificatif.getOriginalFilename().substring(justificatif.getOriginalFilename().lastIndexOf("."));
+        String fileName = customer.getCustomerFirstName()+"_"+customer.getCustomerLastName()+"_"+customer.getCustomerID()+"_order"+savedOrder.getOrder_id()+fileExtension;
+
+        //Save file to the justificatifs directory
+        Path path = Paths.get(uploadDir+"/"+fileName);
+        Files.copy(justificatif.getInputStream(),path, StandardCopyOption.REPLACE_EXISTING);
+        String fileDownloadURI = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/orders/downloadFile/")
+                .path(fileName)
+                .toUriString();
+
+        String justificatifURI = fileDownloadURI;
+        System.out.println("\t"+justificatifURI);
+        orderService.updateFacture(justificatifURI, factureID);
+//
+//        System.out.println("order"+ orderService.createOrders(orderRequest, justificatif
+//                ,itemsList
+//        ).getOrder_id());
+//        return  orderService.createOrders(orderRequest, justificatif
+//                 ,itemsList
+//         );
 
 
-//        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @GetMapping(value = "/downloadFile/{filename:.+}")
+    private ResponseEntity getJustificatif(@PathVariable String filename, HttpServletRequest request) throws IOException {
+        //load file as Resource
+        String uploadDir = System.getProperty("user.dir")+"/justificatifs";
+        Path path =  Paths.get(uploadDir+"/"+filename);
+//        FileStore fileStore = Files.getFileStore(Path.of(uploadDir +"/"+ filename));
+////        File file = new File(filename);
+////        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+////        InputStreamResource resource = FileStore.class.loadFileAsRessource(filename);
+Resource resource = new UrlResource(path.toUri());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment;filename=\""+resource.getFilename()+"\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
     //Register order Details
 //    @PostMapping(value = "/addd")
 //    private ResponseEntity<?> addOrderDetails(@RequestParam("orders") Orders orders,@RequestBody List<OrderItemRequest> orderItemRequests

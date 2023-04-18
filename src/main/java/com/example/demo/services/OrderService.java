@@ -41,6 +41,11 @@ public class OrderService {
         order.setOrderItems(items);
         return order;
     }*/
+    public void updateFacture(String justificatifURI,Integer factureID){
+        Facture facture= factureRepository.findById(factureID).get();
+        facture.setJustificatifURI(justificatifURI);
+        factureRepository.save(facture);
+    }
     public Orders createOrders(OrderController.OrderRequest orderRequest, MultipartFile justificatif,
                              List<OrderController.OrderItemRequest> items
     ) throws IOException {
@@ -84,30 +89,7 @@ public class OrderService {
         return savedOrder;
 //        return orderRepository.save(orders);
     }
-    public void setOrderDetails(Orders order, List<OrderController.OrderItemRequest> items
-    )  {
 
-
-
-
-        for (OrderController.OrderItemRequest item :items) {
-            //Retrieve product from database
-            Product product = productRepository.findById(item.productId()).get();
-            OrderItems orderItems = new OrderItems();
-            orderItems.setQuantity(item.quantity());
-            orderItems.setProduct(product);
-            orderItems.setOrder(order);
-          orderItemRepository.save(orderItems);
-            //Add the order item to the lists of order items
-          //  items.add(orderItems);
-
-        }
-        //Set the order items on the order entity
-        //  orders.setOrderItems(items);
-        //Know save it to the database
-
-//        return orderRepository.save(orders);
-    }
 
     //READ [ALL] DONE😋❌ ADMIN
     public List<Orders> getAllOrders() {
