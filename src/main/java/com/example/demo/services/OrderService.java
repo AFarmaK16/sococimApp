@@ -6,7 +6,9 @@ import com.example.demo.controllers.OrderController;
 import com.example.demo.dao.*;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
+import jakarta.persistence.criteria.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +41,9 @@ public class OrderService {
         order.setOrderItems(items);
         return order;
     }*/
-    public void createOrders(OrderController.OrderRequest orderRequest) {
+    public Orders createOrders(OrderController.OrderRequest orderRequest, MultipartFile justificatif,
+                             List<OrderController.OrderItemRequest> items
+    ) throws IOException {
         //Retrieve the customer from database
         Customer customer = customerRepository.findById(orderRequest.customerID()).get();
         Facture facture = new Facture();
@@ -47,7 +51,7 @@ public class OrderService {
         orders.setCustomer(customer);
         orders.setOrder_status(OrderStatus.valueOf(OrderStatus.ATTENTE.name()));
         orders.setOrder_Amount(orderRequest.order_Amount());
-        facture.setJustificatif(null);
+        facture.setJustificatif(justificatif.getBytes());
 //        facture.setJustificatif(orderRequest.facture().justificatif());
 //      try{
 //          byte[] payment_justificatif = orderRequest.facture().payment_justificatif().getBytes();
@@ -60,16 +64,16 @@ public class OrderService {
         facture.setPaymentStatus(PaymentStatus.ENCOURS);
      //   List<OrderItems> items = new ArrayList<>();
         factureRepository.save(facture);
-        orderRepository.save(orders);
+        Orders savedOrder = orderRepository.save(orders);
 
-        for (OrderController.OrderItemRequest item : orderRequest.items()) {
+        for (OrderController.OrderItemRequest item : items) {
             //Retrieve product from database
             Product product = productRepository.findById(item.productId()).get();
             OrderItems orderItems = new OrderItems();
             orderItems.setQuantity(item.quantity());
             orderItems.setProduct(product);
             orderItems.setOrder(orders);
-            orderItemRepository.save(orderItems);
+          orderItemRepository.save(orderItems);
             //Add the order item to the lists of order items
           //  items.add(orderItems);
 
@@ -77,9 +81,34 @@ public class OrderService {
         //Set the order items on the order entity
       //  orders.setOrderItems(items);
         //Know save it to the database
-
-        //return orderRepository.save(orders);
+        return savedOrder;
+//        return orderRepository.save(orders);
     }
+    public void setOrderDetails(Orders order, List<OrderController.OrderItemRequest> items
+    )  {
+
+
+
+
+        for (OrderController.OrderItemRequest item :items) {
+            //Retrieve product from database
+            Product product = productRepository.findById(item.productId()).get();
+            OrderItems orderItems = new OrderItems();
+            orderItems.setQuantity(item.quantity());
+            orderItems.setProduct(product);
+            orderItems.setOrder(order);
+          orderItemRepository.save(orderItems);
+            //Add the order item to the lists of order items
+          //  items.add(orderItems);
+
+        }
+        //Set the order items on the order entity
+        //  orders.setOrderItems(items);
+        //Know save it to the database
+
+//        return orderRepository.save(orders);
+    }
+
     //READ [ALL] DONE😋❌ ADMIN
     public List<Orders> getAllOrders() {
         return orderRepository.findAll();

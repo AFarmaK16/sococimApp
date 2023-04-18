@@ -20,8 +20,12 @@ public class Facture {
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer facture_id;
-    private String justificatif;
-//    @Lob
+//TODO Ajouter un atttribut pour renommer le justificatif sous forme de CUSTOMERNAME_ORDERID_"JUSTIF"
+@Lob
+    private byte [] justificatif;
+//    private String justificatif;
+
+    //    @Lob
 //    private  byte [] payment_justification;
     private Date payment_date = new Date();
     private PaymentStatus paymentStatus;

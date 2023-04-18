@@ -7,16 +7,28 @@ import com.example.demo.beans.Orders;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.services.OrderService;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.Date;
 import java.util.List;
@@ -32,17 +44,57 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @GetMapping("/add")
-    private ResponseEntity<?> addOrder(@RequestBody OrderRequest orderRequest){
+
+    @PostMapping(value = "/add",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    private Orders addOrder(@ModelAttribute("orderRequest") OrderRequest orderRequest,
+                                       @RequestParam("justificatif") MultipartFile justificatif,
+                                       @RequestParam("items") String items
+
+    ) throws  IOException {
        //TODO YOU'LL GET THE CUSTOMER INFORMATION FROM AUTHENTIFICATION AFTER
         //TODO ADD LE CHAMP POUR JUSTIFICATIF(Look For best way to store it)
+//1.CHECK IF IMAGE IS NOT EMPTY
+        //2.If file is an image
+        //3.If user exist
+        //grab some metadata from file if any
+        //Store the image
+
+
 
          System.out.println(orderRequest);
-         orderService.createOrders(orderRequest);
+         System.out.println("\titems");
+//         System.out.println(items);
+         System.out.println(justificatif);
+         System.out.println(items);
+        ObjectMapper mapper = new ObjectMapper();
+        List<OrderItemRequest> itemsList = mapper.readValue(items, new TypeReference<List<OrderItemRequest>>() {
+        });
+        System.out.println(itemsList);
+        return  orderService.createOrders(orderRequest, justificatif
+                 ,itemsList
+         );
 
 
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+    //Register order Details
+//    @PostMapping(value = "/addd")
+//    private ResponseEntity<?> addOrderDetails(@RequestParam("orders") Orders orders,@RequestBody List<OrderItemRequest> orderItemRequests
+//
+//    ) throws IOException {
+//
+//        System.out.println(orderItemRequests);
+//        ObjectMapper mapper = new ObjectMapper();
+//        List<OrderItemRequest> itemsList = mapper.readValue((JsonParser) orderItemRequests, new TypeReference<List<OrderItemRequest>>() {
+//
+//        }) ;
+//        System.out.println(itemsList);
+//        orderService.setOrderDetails(orders,orderItemRequests);
+//
+//
+//        return new ResponseEntity<>(HttpStatus.CREATED);
+//    }
 
 //Retrieve all orders
     @GetMapping("/lists/all")
@@ -74,18 +126,17 @@ public class OrderController {
             Integer customerRef,
            // Customer customer
             //
-            Integer customerID,
-            List<OrderItemRequest> items,
-            FactureRequest facture
+//            List<OrderItemRequest> items,
+            Integer customerID
+//            @JsonProperty("facture") FactureRequest facture
 
     ) {};
     public record OrderItemRequest(
     Integer productId,
     Integer quantity
     ){}
-    public record FactureRequest(
-            String justificatif,
-//            MultipartFile payment_justificatif,
-            PaymentStatus paymentStatus
-    ){}
+
+    public  record FactureRequest(@JsonProperty("justificatif") MultipartFile justificatif, PaymentStatus paymentStatus){
+
+    }
 }
