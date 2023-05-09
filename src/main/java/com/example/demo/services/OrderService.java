@@ -6,12 +6,11 @@ import com.example.demo.controllers.OrderController;
 import com.example.demo.dao.*;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
-import jakarta.persistence.criteria.Order;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -20,54 +19,67 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private  final ProductRepository productRepository;
     private final FactureRepository factureRepository;
+    private final OperatorRepository operatorRepository;
+    private final DeliveryRepository deliveryRepository;
+    private final PaymentModeRepository paymentModeRepository;
+    private final BankRepository bankRepository;
+    private final DestinationRepository destinationRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository, ProductRepository productRepository, FactureRepository factureRepository) {
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository, ProductRepository productRepository, FactureRepository factureRepository, OperatorRepository operatorRepository, DeliveryRepository deliveryRepository, PaymentModeRepository paymentModeRepository, BankRepository bankRepository, DestinationRepository destinationRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.factureRepository = factureRepository;
+        this.operatorRepository = operatorRepository;
+        this.deliveryRepository = deliveryRepository;
+        this.paymentModeRepository = paymentModeRepository;
+        this.bankRepository = bankRepository;
+        this.destinationRepository = destinationRepository;
     }
 
-    //CREATE DONE😋❌CUSTOMER/ADMIN
-   /* public Orders createOrders(Orders order) {
-        List<OrderItems> items = order.getOrderItems();
-        order.setOrderItems(null);
-        order = orderRepository.save(order);
-        for (OrderItems item : items) {
-            item.setOrder(order);
-            orderItemRepository.save(item);
-        }
-        order.setOrderItems(items);
-        return order;
-    }*/
+
     public void updateFacture(String justificatifURI,Integer factureID){
         Facture facture= factureRepository.findById(factureID).get();
         facture.setJustificatifURI(justificatifURI);
         factureRepository.save(facture);
     }
-    public Orders createOrders(OrderController.OrderRequest orderRequest, MultipartFile justificatif,
-                             List<OrderController.OrderItemRequest> items
-    ) throws IOException {
+    public Orders createOrders(OrderController.OrderRequest orderRequest, List<OrderController.OrderItemRequest> items, OrderController.FactureRequest factureRequest, OrderController.DeliveryRequest deliveryRequest) throws IOException {
         //Retrieve the customer from database
         Customer customer = customerRepository.findById(orderRequest.customerID()).get();
+
         Facture facture = new Facture();
+        facture.setBank(
+                bankRepository.findById(factureRequest.payment_bank()).get());
+        facture.setPayment_date(factureRequest.payment_date());
+        facture.setPayment_reference(factureRequest.payment_reference());
+        //check if that paymentMode exist
+        facture.setPaymentMode(paymentModeRepository.findById(factureRequest.payment_mode()).get());
+       if (factureRequest.payment_mode().equals("TRANSFERT")){
+
+           Operator operator = operatorRepository.findById(factureRequest.operator()).get();
+           facture.setOperator(operator);
+       }
+
         Orders orders = new Orders();
         orders.setCustomer(customer);
         orders.setOrder_status(OrderStatus.valueOf(OrderStatus.ATTENTE.name()));
         orders.setOrder_Amount(orderRequest.order_Amount());
-        facture.setJustificatif(justificatif.getBytes());
-//        facture.setJustificatif(orderRequest.facture().justificatif());
-//      try{
-//          byte[] payment_justificatif = orderRequest.facture().payment_justificatif().getBytes();
-//      }
-//      catch (IOException io){
-//          System.out.println(io.getMessage());
-//      }
-       // facture.setOrder(orders);
+        if (deliveryRequest.isRendu()){
+            Delivery delivery = new Delivery();
+            delivery.setDelivery_address(deliveryRequest.delivery_address());
+            delivery.setDestination(
+                  destinationRepository.findById(deliveryRequest.delivery_destination()).get()
+            );
+            delivery.setDelivery_comment(deliveryRequest.delivery_comment());
+            delivery.setRendu(deliveryRequest.isRendu());
+            delivery.setDecharged(deliveryRequest.isDecharged());
+            deliveryRepository.save(delivery);
+            orders.setDelivery(delivery);
+
+        }
         orders.setFacture(facture);
         facture.setPaymentStatus(PaymentStatus.ENCOURS);
-     //   List<OrderItems> items = new ArrayList<>();
         factureRepository.save(facture);
         Orders savedOrder = orderRepository.save(orders);
 
@@ -108,8 +120,15 @@ public class OrderService {
         return orderRepository.findOrdersByCustomerCustomerIDAndOrder_id(customerID,orderID);
     }
     //UPDATE
-    public void updateOrder(Orders order) {
-         orderRepository.save(order);
+    public void updateOrder(Integer id) {
+      Orders order = null;
+        Optional<Orders> optionalOrders = orderRepository.findById(id);
+        if(optionalOrders.isPresent())  //test si le code de hashage existe
+        {
+            order = optionalOrders.get(); //which is in customer type
+            order.setOrder_status(OrderStatus.VALIDEE);
+            orderRepository.save(order);
+        }
     }
 
     //DELETE ❌ CUSTOMER TODO SEND A NOTIFICATION TO THE ADMIN TO INFORM AN ANNULATION FOR AN ORDER

@@ -20,4 +20,8 @@ public class AccountController {
         return  accountService.getAccount(id);
     }
 
+    @GetMapping("/account/new")
+    public void addAccount(){
+    accountService.addAcount();
+    }
 }

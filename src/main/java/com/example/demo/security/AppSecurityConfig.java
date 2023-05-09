@@ -1,59 +1,35 @@
 package com.example.demo.security;
 
+import com.example.demo.auth.ApplicationUserService;
+import com.example.demo.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static com.example.demo.enums.ApplicationUserRole.*;
 @Configuration
 @EnableWebSecurity
 //@EnableGlobalMethodSecurity(prePostEnabled = true) ********
 public class AppSecurityConfig {
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationUserService applicationUserService;
     @Autowired
-    public AppSecurityConfig(PasswordEncoder passwordEncoder) {
+    public AppSecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
         this.passwordEncoder = passwordEncoder;
+        this.applicationUserService = applicationUserService;
     }
 
     //TODO USE JDBC RATHER THAN INMEMORY FOR USER DETAILS
-    @Bean
-    public UserDetailsService userDetailsService(){
-    UserDetails adjaUser = User.builder()
-            .username("adja")
-            .password(passwordEncoder.encode("passer"))
-            //.roles(customer.name())// ROLE_CUSTOMER
-            .authorities(customer.getGrantedAuthorities())
-            .build();
-     UserDetails zaidUser = User.builder()
-                .username("zaid")
-                .password(passwordEncoder.encode("passer"))
-                //.roles(admin.name())// ROLE_ADMIN
-                 .authorities(admin.getGrantedAuthorities())
 
-                .build();
-     /*UserDetails zaidUser = User.builder()
-                .username("zaid")
-                .password(passwordEncoder.encode("passer"))
-                .roles(admin.name())// ROLE_ADMIN
-                .build();*/
-          UserDetails deliverUser = User.builder()
-                .username("abk")
-                .password(passwordEncoder.encode("passer"))
-               // .roles(deliver.name())// ROLE_DELIVER
-                  .authorities(commercial.getGrantedAuthorities())
 
-                .build();
-    return new InMemoryUserDetailsManager(adjaUser,zaidUser,deliverUser);
-
-}
 
 //To secure endpoints
     @Bean
@@ -62,43 +38,40 @@ public class AppSecurityConfig {
         //THE ORDER WE USE FOR REQUESTMATCHERS(ADMIN/CUSTOMER) MATTER
         http
                .csrf().disable() // if enabled logout method should be POST
-        /*
-        * In the logout we should then have
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout","POST"))
-        * */
+                .cors().disable()
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//session isn't gonna be stored in DB
+                .and()
+//                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(http)))
+
                 .authorizeHttpRequests()
-                //NOTE THAT REQUESTMATCHERS CAN BE REPLACED WITH something like @PREAUTHORIZE(HASROLE(ROLE_ADMIN) :: OR /:: hasAuthority('customer:add')
-
-                //BUT FOR THIS WILL NEED TO ADD ****** , by the way it is deprecated, look for equivalent
-//    /            .requestMatchers(HttpMethod.GET,"/api/v1/customers/add").hasAuthority(ADD_CUSTOMER.getPermission())
-//    /            .requestMatchers(HttpMethod.GET,"/api/v1/products/lists/**").hasAuthority(LIST_PRODUCTS.getPermission())
-//    /            .requestMatchers("/api/**").hasRole(admin.name())
-                //For an endpoint with more than one roleUser use hasAnyRole
                 .anyRequest()
-//     /           .authenticated()
-                .permitAll()//delete this one
-                .and()
-                .httpBasic()
-               /*.formLogin()
-                .loginPage("/login").permitAll()*/
-                //.loginProcessingUrl("/api/v1/login")
+//               .authenticated()
+                .permitAll()
 
-        //authentication type
-               /*.loginPage("/login").permitAll()
-                .defaultSuccessUrl("/products",true)
-                .and()
-                .rememberMe().tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)).key("somethingverysecured")
-                .and()
-                .logout()
-                .logoutUrl("/logout")
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET"))
-                .clearAuthentication(true)
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID","remember-me")
-                .logoutSuccessUrl("/login")*/
-
+//TODO automatiser le demarrage du serveur au lancement de l'application
                 ;
         return http.build();
 
+    }
+
+//    protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception{
+//        authenticationManagerBuilder.authenticationProvider(daoAuthenticationProvider());
+//
+//    }
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity)throws  Exception{
+        AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.authenticationProvider(daoAuthenticationProvider());
+        return authenticationManagerBuilder.build();
+    }
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);//allow password to be decoded
+//        provider.setPasswordEncoder(passwordEncoder);//allow password to be decoded
+        provider.setUserDetailsService(applicationUserService);
+        System.out.println("Provider 😩 "+provider);
+        return provider;
     }
 }

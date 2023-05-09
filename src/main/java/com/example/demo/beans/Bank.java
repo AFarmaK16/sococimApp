@@ -11,14 +11,14 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor @AllArgsConstructor
-public class Operator implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer operator_id;
-    private String operator_name;
-    private boolean operator_validity= false; //TODO SET OPERATOR VALIDITY TO TRUE
+@Entity
+public class Bank implements Serializable {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Integer id;
+        private String nom;
 }

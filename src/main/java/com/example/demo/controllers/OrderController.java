@@ -1,20 +1,21 @@
 package com.example.demo.controllers;
 
 import com.example.demo.beans.Customer;
+import com.example.demo.beans.Operator;
 import com.example.demo.beans.Orders;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
+import com.example.demo.enums.Payment_Type;
 import com.example.demo.services.CustomerService;
 import com.example.demo.services.OrderService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
 import jakarta.servlet.http.HttpServletRequest;
-import jdk.jfr.ContentType;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -24,15 +25,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.thymeleaf.util.ContentTypeUtils;
-import org.thymeleaf.util.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 
@@ -51,10 +50,9 @@ public class OrderController {
 
 
     @PostMapping(value = "/add",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    private ResponseEntity<?> addOrder(@ModelAttribute("orderRequest") OrderRequest orderRequest, @RequestParam("justificatif") MultipartFile justificatif, @RequestParam("items") String items) throws  IOException {
+    private ResponseEntity<?> addOrder(@ModelAttribute("orderRequest") OrderRequest orderRequest, @RequestParam("justificatif") MultipartFile justificatif, @RequestParam("items") String items,@RequestParam("facture") String facture,@RequestParam("delivery") String delivery) throws  IOException {
        //TODO YOU'LL GET THE CUSTOMER INFORMATION FROM AUTHENTIFICATION AFTER
         //TODO ADD LE CHAMP POUR JUSTIFICATIF(Look For best way to store it)
-
         //1.CHECK IF IMAGE IS NOT EMPTY
         if(justificatif.isEmpty()){
             throw new IllegalStateException("Can't upload emty file ["+justificatif.getSize()+"]");
@@ -76,23 +74,23 @@ public class OrderController {
         }
         Customer customer = customerService.getCustomer(orderRequest.customerID);
 
-
-
-        //        String fileName = StringUtils.cleanPath(justificatif.getOriginalFilename());
-
-
-         System.out.println(orderRequest);
-         System.out.println("\titems");
-//         System.out.println(items);
-         System.out.println(justificatif);
-         System.out.println(items);
         ObjectMapper mapper = new ObjectMapper();
         List<OrderItemRequest> itemsList = mapper.readValue(items, new TypeReference<List<OrderItemRequest>>() {
         });
-        System.out.println(itemsList);
-        Orders savedOrder = orderService.createOrders(orderRequest, justificatif
-                ,itemsList
-        );
+//        System.out.println(itemsList);
+//        Orders savedOrder = orderService.createOrders(orderRequest,itemsList);
+        //Mapping Facture String to FactureRequest
+        ObjectMapper mapper1 = new ObjectMapper();
+        FactureRequest factureRequest = mapper1.readValue(facture, new TypeReference<>() {
+        });
+        //END MAPPING
+        //Mapping Delivery String to DeliveryRequest
+        ObjectMapper mapper2 = new ObjectMapper();
+        DeliveryRequest deliveryRequest = mapper2.readValue(delivery, new TypeReference<>() {
+        });
+//        System.out.println(deliveryRequest);
+        Orders savedOrder = orderService.createOrders(orderRequest,itemsList,factureRequest,deliveryRequest);
+        //END MAPPING
         Integer factureID = savedOrder.getFacture().getFacture_id();
         String fileExtension = justificatif.getOriginalFilename().substring(justificatif.getOriginalFilename().lastIndexOf("."));
         String fileName = customer.getCustomerFirstName()+"_"+customer.getCustomerLastName()+"_"+customer.getCustomerID()+"_order"+savedOrder.getOrder_id()+fileExtension;
@@ -108,14 +106,6 @@ public class OrderController {
         String justificatifURI = fileDownloadURI;
         System.out.println("\t"+justificatifURI);
         orderService.updateFacture(justificatifURI, factureID);
-//
-//        System.out.println("order"+ orderService.createOrders(orderRequest, justificatif
-//                ,itemsList
-//        ).getOrder_id());
-//        return  orderService.createOrders(orderRequest, justificatif
-//                 ,itemsList
-//         );
-
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -125,33 +115,12 @@ public class OrderController {
         //load file as Resource
         String uploadDir = System.getProperty("user.dir")+"/justificatifs";
         Path path =  Paths.get(uploadDir+"/"+filename);
-//        FileStore fileStore = Files.getFileStore(Path.of(uploadDir +"/"+ filename));
-////        File file = new File(filename);
-////        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
-////        InputStreamResource resource = FileStore.class.loadFileAsRessource(filename);
-Resource resource = new UrlResource(path.toUri());
+        Resource resource = new UrlResource(path.toUri());
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,"attachment;filename=\""+resource.getFilename()+"\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
-    //Register order Details
-//    @PostMapping(value = "/addd")
-//    private ResponseEntity<?> addOrderDetails(@RequestParam("orders") Orders orders,@RequestBody List<OrderItemRequest> orderItemRequests
-//
-//    ) throws IOException {
-//
-//        System.out.println(orderItemRequests);
-//        ObjectMapper mapper = new ObjectMapper();
-//        List<OrderItemRequest> itemsList = mapper.readValue((JsonParser) orderItemRequests, new TypeReference<List<OrderItemRequest>>() {
-//
-//        }) ;
-//        System.out.println(itemsList);
-//        orderService.setOrderDetails(orders,orderItemRequests);
-//
-//
-//        return new ResponseEntity<>(HttpStatus.CREATED);
-//    }
 
 //Retrieve all orders
     @GetMapping("/lists/all")
@@ -159,28 +128,23 @@ Resource resource = new UrlResource(path.toUri());
         return orderService.getAllOrders();
     }
 
+    @PutMapping("/validate/{orderId}")
+    private ResponseEntity validateOrder(@PathVariable("orderId") Integer orderId){
+         orderService.updateOrder(orderId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
     //Retrieve order for the specified OrderId
     @GetMapping("/lists/{orderId}")
     private Orders getOrders(@PathVariable("orderId") Integer orderId){
         return orderService.getOrdersById(orderId);
     }
 
-    //Retrieve all orders for the specified customer
- /*   @GetMapping("/lists/{customerID}")//In customer controller🙂
-    private List<Orders> getCustomerOrders(@PathVariable("customerID") Integer customerID){
-        return orderService.getCustomerOrders(customerID);
-    }
-   /* @GetMapping("/lists/{customerID}/{orderID}")//In customer controller 🙂
-    private Orders getCustomerOrdersById(@PathVariable ("customerID") Integer customerID,@PathVariable("orderID") Integer orderID){
-        return orderService.getCustomerOrdersById(customerID,orderID);
-    }*/
 
     public record OrderRequest(
             Date order_Date,
             Double order_Amount,
             OrderStatus order_status,
-            Integer deliverRef,
-            Integer customerRef,
+           //TODO dans le input du checkhout ne pas  permettre de choisir une date > aujourd'hui
            // Customer customer
             //
 //            List<OrderItemRequest> items,
@@ -192,8 +156,19 @@ Resource resource = new UrlResource(path.toUri());
     Integer productId,
     Integer quantity
     ){}
-
-    public  record FactureRequest(@JsonProperty("justificatif") MultipartFile justificatif, PaymentStatus paymentStatus){
+    public  record FactureRequest(
+            PaymentStatus paymentStatus,
+                                   Date payment_date,
+     String payment_reference,
+     Integer operator,
+     Integer payment_bank,
+     Integer payment_mode){
 
     }
+    public record DeliveryRequest(  Integer delivery_ID,
+             String delivery_address,
+             Integer delivery_destination,
+             String delivery_comment,
+             boolean isRendu,
+             boolean isDecharged){}
 }
