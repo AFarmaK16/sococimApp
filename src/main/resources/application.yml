@@ -22,5 +22,6 @@ spring:
       enabled: true
       max-file-size: 1MB
       resolve-lazily: false
+      max-request-size: 1MB
 server:
   port: 8081

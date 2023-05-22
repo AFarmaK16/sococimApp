@@ -1,35 +1,40 @@
 package com.example.demo.beans;
 
 import com.example.demo.enums.PaymentStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.example.demo.enums.Payment_Type;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.context.annotation.Bean;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter@Setter
-public class Facture {
+
+public class Facture implements Serializable {
 
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer facture_id;
 //TODO Ajouter un atttribut pour renommer le justificatif sous forme de CUSTOMERNAME_ORDERID_"JUSTIF"
-@Lob
-    private byte [] justificatif;
-    private String justificatifURI;
 
-    //    @Lob
-//    private  byte [] payment_justification;
-    private Date payment_date = new Date();
+    private String justificatifURI;
+    private Date payment_date ;
     private PaymentStatus paymentStatus;
-  /*  @OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Orders order;*/
+    private String payment_reference;
+
+    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private Operator operator;
+    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private Bank bank;
+    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private PaymentMode paymentMode;
+
+
 }
+

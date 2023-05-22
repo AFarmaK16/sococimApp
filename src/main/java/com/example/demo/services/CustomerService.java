@@ -14,7 +14,7 @@ import java.util.List;
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
-//TODO Veillez a ne pas afficher le password d'un customer ou de n'importe quel utilisateur
+//TODO Veillez a ne pas afficher le password d'un customer ou de n'importe quel utilisateur en clair
     //READ [ALL]-😋 ❌ ADMIN
     public List<Customer> getAllCustomers(){
         return customerRepository.findAll();
@@ -43,8 +43,8 @@ public class CustomerService {
         if (!customerRepository.existsById(id)){
             throw new IllegalStateException("Customer with Id: "+id+" doesn't exists");
         }
-        customerRepository.deleteById(id);
-        accountRepository.deleteById(customerRepository.findById(id).get().getAccount().getIdAccount());
+//    😂😂      customerRepository.deleteById(id);
+//   😂😂     accountRepository.deleteById(customerRepository.findById(id).get().getAccount().getIdAccount());
     }
     //UPDATE
     /*public void updateCustomer(Customer request,Integer id){

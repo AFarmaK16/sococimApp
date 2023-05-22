@@ -31,7 +31,10 @@ public class Account implements Serializable, UserDetails {
     private  boolean account_validity = true;
     private boolean first_Logged = true;
     private GrantedAuthority grantedAuthorities;
-
+    @OneToOne(cascade = CascadeType.ALL)
+    private User user;
+    @OneToOne(cascade = CascadeType.ALL)
+    private Customer customer;
 //    private  Set<? extends GrantedAuthority> grantedAuthorities;
 //    private final Set<? extends  GrantedAuthority> grantedAuthorities;
     private  boolean isAccountNonExpired;

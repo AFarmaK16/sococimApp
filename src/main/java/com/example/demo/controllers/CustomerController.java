@@ -41,12 +41,11 @@ public class CustomerController {
     }*/
     @GetMapping("/add")
     public void addCustomer(@RequestBody CustomerRequest customerRequest){
-    Account account = new Account();
-    account.setDateOuverture(new Date());
-    account.setRole(customerRequest.account.getRole());
-    account.setLogin(customerRequest.account.getLogin());
-    account.setPassword(customerRequest.account.getPassword());
-    account.setUserRefID(customerRequest.account.getUserRefID());
+//    Account account = new Account();
+//    account.setDateOuverture(new Date());
+//    account.setRole(customerRequest.account.getRole());
+//    account.setUsername(customerRequest.account.getUsername());
+//    account.setPassword(customerRequest.account.getPassword());
     Customer c = new Customer();
 
         c.setCustomerFirstName(customerRequest.customerFirstName);
@@ -54,7 +53,7 @@ public class CustomerController {
 //        c.setCustomerType(CustomerType.COMPTANT);
         c.setCustomerPhoneNumber(customerRequest.customerPhoneNumber);
         c.setCustomerAddress(customerRequest.customerAddress);
-        c.setAccount(account);
+//        c.setAccount(account);
 
         customerService.createCustomer(c);
     }
@@ -79,8 +78,9 @@ public class CustomerController {
              String customerLastName,
              String customerAddress,
 //             CustomerType customerType,
-             String customerPhoneNumber,
-             Account account
+             String customerPhoneNumber
+//            ,
+//             Account account
                           ) {
 
     }

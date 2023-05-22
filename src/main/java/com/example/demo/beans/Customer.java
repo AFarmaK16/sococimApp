@@ -24,8 +24,8 @@ public class Customer implements Serializable {
 //    private CustomerType customerType;
     private String customerAddress;
     private String customerPhoneNumber;
-    @OneToOne(cascade = CascadeType.ALL)
-    private Account account;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    private Account account;
   /*  @OneToMany(mappedBy = "client")
     private List<Orders> ordersList;*/
 

@@ -1,9 +1,6 @@
 package com.example.demo.beans;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,4 +19,6 @@ public class Destination implements Serializable {
     private Integer id;
     private String nom;
     private Double tarif;
+    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private Tarification tarification;
 }
