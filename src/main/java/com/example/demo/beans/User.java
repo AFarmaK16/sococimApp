@@ -17,6 +17,6 @@ public class User {
     private Integer id;
     private String name;
     private String surname;
-    @OneToOne(cascade = CascadeType.ALL)
-    private Account account;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    private Account account;
 }

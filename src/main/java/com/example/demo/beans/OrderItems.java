@@ -19,7 +19,7 @@ public class OrderItems implements Serializable {
     private Integer id;
 
     //private Double price;
-    private Integer quantity;
+    private Double quantity;
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     private Orders order;
@@ -27,5 +27,7 @@ public class OrderItems implements Serializable {
     //COMMANDEE HISTOIRE DE GARDER L'HISTORIQUE
     @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private Product product;
+    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private Tarification tarification;
 
 }

@@ -1,7 +1,6 @@
 package com.example.demo.beans;
 
 import com.example.demo.enums.PaymentStatus;
-import com.example.demo.enums.Payment_Type;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +19,7 @@ public class Facture implements Serializable {
 
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer facture_id;
+    private Integer id;
 //TODO Ajouter un atttribut pour renommer le justificatif sous forme de CUSTOMERNAME_ORDERID_"JUSTIF"
 
     private String justificatifURI;
@@ -29,11 +28,11 @@ public class Facture implements Serializable {
     private String payment_reference;
 
     @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    private Operator operator;
+    private PaymentModes paymentModes;
+//    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+//    private Bank bank;
     @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    private Bank bank;
-    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    private PaymentMode paymentMode;
+    private PaymenType paymenType;
 
 
 }

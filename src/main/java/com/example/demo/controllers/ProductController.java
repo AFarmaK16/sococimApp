@@ -20,13 +20,8 @@ public class ProductController {
     @PostMapping("/add")
     public void addProduct(@RequestBody ProductRequest productRequest){
     System.out.println(productRequest);
-        Product p = new Product();
-        p.setProduct_label(productRequest.product_label);
-        p.setProduct_price(productRequest.product_price);
-        p.setProduct_type(productRequest.product_type);
-        p.setProduct_description(productRequest.product_description);
-        p.setProduct_image(null);
-        productService.addProduct(p);
+
+        productService.addProduct(productRequest);
     }
 
     @GetMapping("/lists")
@@ -43,22 +38,29 @@ public class ProductController {
     public Product getProduct(@PathVariable("productId") Integer id){
         return productService.getProductByID(id);
     }
-    @DeleteMapping("/delete/{productId}")
+    @PutMapping("/delete/{productId}")
     public  void deleteProduct(@PathVariable("productId") Integer id){
 
         productService.deleteProduct(id);
+    }
+    @PutMapping("/update/{productId}")
+    public void updateProduct(@PathVariable("productId") Integer id,@RequestBody ProductRequest productRequest){
+    System.out.println(productRequest);
+    productService.updateProduct(id,productRequest);
+
     }
    /* @PutMapping("/update/{productId}")
     public void updateProduct(@PathVariable("productId") Integer id,@RequestBody ProductRequest productRequest){
 
 
     }*/
-    record ProductRequest(
-                Integer product_id,
-    Double product_price,
+   public record ProductRequest(
+//                Integer product_id,
         String product_label,
         String product_type,
-        String product_description
+        String product_description,
+    String product_imageURI,
+    Integer tarification
     )
     {
 

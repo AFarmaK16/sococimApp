@@ -34,35 +34,29 @@ public class AccountService {
 
     //TODO WILL HAVE TO CHANGE IT AFTER TO VOID CAUSE NO NEED A TOKEN IF ACCOUNT IS CREATED BY ANOTHER
     //wILL HAVE TO RENAME IT REGISTER
-    public AuthenticationResponse addAcount(AccountRequest accountRequest){
+    public AuthenticationResponse addCustomer(AccountRequest accountRequest,Customer customer){
 
         Account account = new Account();
         account.setUsername(accountRequest.username());
-        account.setAccount_validity(true);
+//        account.setAccount_validity(true);
         account.setPassword(passwordEncoder.encode(accountRequest.password()));
-        account.setRole(accountRequest.role());
+
         account.setAccountNonExpired(true);
         account.setAccountNonLocked(true);
         account.setDateOuverture(new Date());
         account.setCredentialsNonExpired(true);
         account.setEnabled(true);
 //        account.setGrantedAuthorities((GrantedAuthority) customer.getGrantedAuthorities());
-        if (accountRequest.role().equals(RoleType.CUSTOMER)){
-            Customer customer = new Customer();
-            customer.setCustomerAddress(accountRequest.customer().getCustomerAddress());
-            customer.setCustomerFirstName(accountRequest.customer().getCustomerFirstName());
-            customer.setCustomerLastName(accountRequest.customer().getCustomerLastName());
-            customer.setCustomerPhoneNumber(accountRequest.customer().getCustomerPhoneNumber());
-            customerRepository.save(customer);
-            account.setCustomer(customer);
-        }
-        else {
-            User user = new User();
-            user.setName(accountRequest.user().getName());
-            user.setSurname(accountRequest.user().getSurname());
-            userRepository.save(user);
-            account.setUser(user);
-        }
+           System.out.println(RoleType.CUSTOMER.name());
+            Customer c = new Customer();
+            c.setAddress(customer.getAddress());
+            c.setName(customer.getName());
+            c.setSurname(customer.getSurname());
+            c.setPhoneNumber(customer.getPhoneNumber());
+            customerRepository.save(c);
+            account.setRole(RoleType.CUSTOMER);
+            account.setCustomer(c);
+
 
 //        account.setRole(RoleType.CUSTOMER);
         accountRepository.save(account);
@@ -73,11 +67,45 @@ public class AccountService {
                 .build();
 
     }
+    public AuthenticationResponse addUser(AccountRequest accountRequest,User user){
 
-    //READ [ALL] ❌ ADMIN
-    public List<Account> getAllCustomers(){
-        return accountRepository.findAll();
+        Account account = new Account();
+        account.setUsername(accountRequest.username());
+//        account.setAccount_validity(true);
+        account.setPassword(passwordEncoder.encode(accountRequest.password()));
+
+        account.setAccountNonExpired(true);
+        account.setAccountNonLocked(true);
+        account.setDateOuverture(new Date());
+        account.setCredentialsNonExpired(true);
+        account.setEnabled(true);
+//        account.setGrantedAuthorities((GrantedAuthority) customer.getGrantedAuthorities());
+// TODO double referencement entre compte et user ou client
+
+            account.setRole(RoleType.valueOf(accountRequest.role()));
+            User u = new User();
+            u.setName(user.getName());
+            u.setSurname(user.getSurname());
+            userRepository.save(u);
+            account.setUser(u);
+
+//        account.setRole(RoleType.CUSTOMER);
+        accountRepository.save(account);
+        //Generating token after account creation
+        var jwtToken = jwtService.generateToken(account);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+
     }
+    //READ [ALL] ❌ ADMIN
+    public List<Account> getAllAccounts(){
+        return accountRepository.findAccountByEnabledIsTrue();// retrieve all accounts exepted deleted one(including locked one)
+    }
+    public List<Account> getAllLockedAccounts(){
+        return accountRepository.findAccountByEnabledIsTrueAndAccountNonLockedIsTrue();//retrieve enabled but
+    }
+
     public List<Account> getAllAccountsByRole(RoleType roleType){
         return accountRepository.findAccountByRole(roleType);
     }
@@ -87,7 +115,36 @@ public class AccountService {
 
         return accountRepository.findById(id);
     }
-
+    public void unLockAccount(Integer id){
+        Account account = null;
+        Optional<Account> optionalAccount = accountRepository.findById(id);
+        if(optionalAccount.isPresent())  //test si le code de hashage existe
+        {
+            account = optionalAccount.get();
+            account.setAccountNonLocked(true);
+            accountRepository.save(account);
+        }
+    }
+    public void deleteAccount(Integer id){
+        Account account = null;
+        Optional<Account> optionalAccount = accountRepository.findById(id);
+        if(optionalAccount.isPresent())  //test si le code de hashage existe
+        {
+            account = optionalAccount.get();
+            account.setEnabled(false);
+            accountRepository.save(account);
+        }
+    }
+    public void blockAccount(Integer id){
+        Account account = null;
+        Optional<Account> optionalAccount = accountRepository.findById(id);
+        if(optionalAccount.isPresent())  //test si le code de hashage existe
+        {
+            account = optionalAccount.get();
+            account.setAccountNonLocked(false);
+            accountRepository.save(account);
+        }
+    }
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
         authenticationManager.authenticate(

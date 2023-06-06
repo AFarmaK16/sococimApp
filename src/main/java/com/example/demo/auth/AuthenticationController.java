@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private final AccountService accountService ;
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<AuthenticationResponse> register( //TODO look at null val
             @RequestBody AccountRequest request
     ){
-        return ResponseEntity.ok(  accountService.addAcount(request))
+        return ResponseEntity.ok(  accountService.addUser(request,null))
       ;
     }
     @PostMapping("/authenticate")

@@ -1,30 +1,28 @@
 package com.example.demo.controllers;
 
-import com.example.demo.beans.Bank;
 import com.example.demo.beans.Destination;
-import com.example.demo.beans.PaymentMode;
-import com.example.demo.services.BankService;
+import com.example.demo.beans.PaymenType;
 import com.example.demo.services.DestinationService;
-import com.example.demo.services.PaymentModeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.services.PaymentTypeService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @CrossOrigin
 @RestController
-//@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/orderSettings/")
 public class OrderSettingsController {
     private final DestinationService destinationService;
-    private final BankService bankService;
-    private final PaymentModeService paymentModeService;
-@Autowired
-    public OrderSettingsController(DestinationService destinationService, BankService bankService, PaymentModeService paymentModeService) {
-        this.destinationService = destinationService;
-        this.bankService = bankService;
-        this.paymentModeService = paymentModeService;
-    }
+
+    private final PaymentTypeService paymentTypeService;
+
+//@Autowired
+//    public OrderSettingsController(DestinationService destinationService, BankService bankService, PaymentTypeService paymentTypeService) {
+//        this.destinationService = destinationService;
+//        this.paymentTypeService = paymentTypeService;
+//    }
 
     //Destination
     @GetMapping("/destinations")
@@ -35,46 +33,60 @@ public class OrderSettingsController {
     @PostMapping("/destinations/new")
     public void addDest( @RequestBody DestinationRequest destinationRequest){
         System.out.println(destinationRequest);
-        Destination destination = new Destination();
-        destination.setNom(destinationRequest.city);
-        destination.setTarif(destinationRequest.tarif);
-        destinationService.addDest(destination);
+
+        destinationService.addDest(destinationRequest);
 //        System.out.println(destinationRequest);
     }
+    @PutMapping("/destinations/delete/{destinationID}")
+    public  void deleteDestination(@PathVariable("destinationID") Integer id){
 
+        destinationService.delDest(id);
+    }
+    @PutMapping("/destinations/update/{destinationID}")
+    public void updateDestination(@PathVariable("destinationID") Integer id,@RequestBody DestinationRequest destinationRequest){
+        System.out.println(destinationRequest);
+        destinationService.updateDest(id,destinationRequest);
+
+    }
     ///Banking
-    @GetMapping("/banks")
-    public List<Bank> getBanks(){
-        return bankService.getAllBanks();
-    }
-
-    @PostMapping("/banks/new")
-    public void addBank( @RequestBody BankRequest bankRequest){
-        Bank bank = new Bank();
-        bank.setNom(bankRequest.name);
-        bankService.addBank(bank);
-        System.out.println(bankRequest);
-    }
+//    @GetMapping("/banks")
+//    public List<Bank> getBanks(){
+//        return bankService.getAllBanks();
+//    }
+//
+//    @PostMapping("/banks/new")
+//    public void addBank( @RequestBody BankRequest bankRequest){
+//        Bank bank = new Bank();
+//        bank.setNom(bankRequest.name);
+//        bankService.addBank(bank);
+//        System.out.println(bankRequest);
+//    }
 
 
     //PaymentMode
-    @GetMapping("/paymentModes")
-    public List<PaymentMode> getPaymentModes(){
-        return paymentModeService.getAllPMode();
+    @GetMapping("/paymentType")
+    public List<PaymenType> getPaymentTypes(){
+        return paymentTypeService.getAllPMode();
     }
 
-    @PostMapping("/paymentModes/new")
-    public void addPaymentMode(@RequestBody PaymentModeRequest paymentModeRequest){
-        PaymentMode paymentMode = new PaymentMode();
-        paymentMode.setLibelle(paymentModeRequest.libelle);
-        paymentModeService.addPMode(paymentMode);
-        System.out.println(paymentModeRequest);
+    @PostMapping("/paymentType/new")
+    public void addPaymentType(@RequestBody PaymentTypeRequest paymentTypeRequest){
+        PaymenType paymenType = new PaymenType();
+        paymenType.setLibelle(paymentTypeRequest.libelle);
+        paymentTypeService.addPayType(paymenType);
+        System.out.println(paymentTypeRequest);
     }
-    public record PaymentModeRequest(
+    @PutMapping("/paymentType/delete/{payTypeID}")
+    public  void deletePayType(@PathVariable("payTypeID") Integer id){
+
+        paymentTypeService.delPayType(id);
+    }
+
+    public record PaymentTypeRequest(
             String libelle){}
     public record DestinationRequest(
             String city,
-            Double tarif
+            Integer tarification
     ){}
     public record BankRequest(
             String name){}

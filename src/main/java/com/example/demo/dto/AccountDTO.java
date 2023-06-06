@@ -12,7 +12,8 @@ public record AccountDTO(
         RoleType role,
         User user,
         Customer customer,
-        Date dateOuverture
-
+        Date dateOuverture,
+        Boolean isEnabled,
+ Boolean isAccountNonLocked
 ) {
 }

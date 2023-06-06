@@ -18,7 +18,8 @@ public class Destination implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String nom;
-    private Double tarif;
+//    private Double tarif;
     @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private Tarification tarification;
+    private boolean validity = true;
 }

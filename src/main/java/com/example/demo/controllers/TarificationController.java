@@ -28,13 +28,19 @@ public class TarificationController {
     private Tarification getCustomerOrdersById(@PathVariable("tarifID") Integer orderID){
         return tarificationService.getTarificationByID(orderID);
     }
-    @GetMapping("/new")
+    @PostMapping ("/new")
     public void addTarification( @RequestBody TarificationRequest tarificationRequest){
     Tarification tarification = new Tarification();
+    tarification.setDateAppli(new Date());
         tarification.setMontant(tarificationRequest.montant);
         tarification.setDatefin(tarificationRequest.datefin);
          tarificationService.addTarification(tarification);
          System.out.println(tarificationRequest);
+    }
+    @PutMapping("/delete/{tarifID}")
+    public  void deleteTarification(@PathVariable("tarifID") Integer id){
+
+        tarificationService.delTarification(id);
     }
     public record TarificationRequest(
              Date datefin,

@@ -4,8 +4,10 @@ package com.example.demo.services;
 import com.example.demo.beans.*;
 import com.example.demo.controllers.OrderController;
 import com.example.demo.dao.*;
+import com.example.demo.dao.PaymentModesRepository;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -13,30 +15,30 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository ;
     private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private  final ProductRepository productRepository;
     private final FactureRepository factureRepository;
-    private final OperatorRepository operatorRepository;
+    private final PaymentModesRepository paymentModesRepository;
     private final DeliveryRepository deliveryRepository;
-    private final PaymentModeRepository paymentModeRepository;
-    private final BankRepository bankRepository;
+    private final PaymentTypeRepository paymentTypeRepository;
     private final DestinationRepository destinationRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository, ProductRepository productRepository, FactureRepository factureRepository, OperatorRepository operatorRepository, DeliveryRepository deliveryRepository, PaymentModeRepository paymentModeRepository, BankRepository bankRepository, DestinationRepository destinationRepository) {
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.customerRepository = customerRepository;
-        this.productRepository = productRepository;
-        this.factureRepository = factureRepository;
-        this.operatorRepository = operatorRepository;
-        this.deliveryRepository = deliveryRepository;
-        this.paymentModeRepository = paymentModeRepository;
-        this.bankRepository = bankRepository;
-        this.destinationRepository = destinationRepository;
-    }
+//    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository, ProductRepository productRepository, FactureRepository factureRepository, PaymentModesRepository paymentModesRepository, DeliveryRepository deliveryRepository, PaymentTypeRepository paymentTypeRepository, BankRepository bankRepository, DestinationRepository destinationRepository) {
+//        this.orderRepository = orderRepository;
+//        this.orderItemRepository = orderItemRepository;
+//        this.customerRepository = customerRepository;
+//        this.productRepository = productRepository;
+//        this.factureRepository = factureRepository;
+//        this.paymentModesRepository = paymentModesRepository;
+//        this.deliveryRepository = deliveryRepository;
+//        this.paymentTypeRepository = paymentTypeRepository;
+//        this.bankRepository = bankRepository;
+//        this.destinationRepository = destinationRepository;
+//    }
 
 
     public void updateFacture(String justificatifURI,Integer factureID){
@@ -49,17 +51,17 @@ public class OrderService {
         Customer customer = customerRepository.findById(orderRequest.customerID()).get();
 
         Facture facture = new Facture();
-        facture.setBank(
-                bankRepository.findById(factureRequest.payment_bank()).get());
+//        facture.setBank(
+//                bankRepository.findById(factureRequest.payment_bank()).get());
         facture.setPayment_date(factureRequest.payment_date());
         facture.setPayment_reference(factureRequest.payment_reference());
         //check if that paymentMode exist
-        facture.setPaymentMode(paymentModeRepository.findById(factureRequest.payment_mode()).get());
-       if (factureRequest.payment_mode().equals("TRANSFERT")){
+        facture.setPaymenType(paymentTypeRepository.findById(factureRequest.payment_mode()).get());
+//       if (factureRequest.payment_mode().equals("TRANSFERT")){
 
-           Operator operator = operatorRepository.findById(factureRequest.operator()).get();
-           facture.setOperator(operator);
-       }
+           com.example.demo.beans.PaymentModes paymentModes = this.paymentModesRepository.findById(factureRequest.operator()).get();
+           facture.setPaymentModes(paymentModes);
+//       }
 
         Orders orders = new Orders();
         orders.setCustomer(customer);
@@ -90,6 +92,7 @@ public class OrderService {
             orderItems.setQuantity(item.quantity());
             orderItems.setProduct(product);
             orderItems.setOrder(orders);
+            orderItems.setTarification(product.getTarification());
           orderItemRepository.save(orderItems);
             //Add the order item to the lists of order items
           //  items.add(orderItems);

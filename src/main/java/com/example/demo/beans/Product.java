@@ -6,24 +6,29 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter@Setter
 @Entity
-public class Product {
+public class Product implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer product_id;
 
-    private Double product_price;
+    private Integer id;
+
+//    private Double product_price;
     private String product_label;
     private String product_type;
-    //TODO GAMME DE PRODUIT  OU TYPE
     private String product_description;
-    private String product_image;
-    
+    private String product_imageURI;
+    private boolean validity = true;
+    @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private Tarification tarification;
+
 /*
-APPARENTLY THEY HAVE MANY ORICE FOR PRODUCTS, AND MANY DESIGNATION TOO
+APPARENTLY THEY HAVE MANY PRICE FOR PRODUCTS, AND MANY DESIGNATION TOO
 * devise
 * */
    /* @ManyToOne(fetch = FetchType.LAZY)

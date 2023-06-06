@@ -1,14 +1,12 @@
 package com.example.demo.controllers;
 
-import com.example.demo.beans.Account;
 import com.example.demo.beans.Customer;
 import com.example.demo.beans.Orders;
-import com.example.demo.enums.CustomerType;
 import com.example.demo.services.CustomerService;
 import com.example.demo.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.Date;
+
 import java.util.List;
 
 
@@ -48,11 +46,11 @@ public class CustomerController {
 //    account.setPassword(customerRequest.account.getPassword());
     Customer c = new Customer();
 
-        c.setCustomerFirstName(customerRequest.customerFirstName);
-        c.setCustomerLastName(customerRequest.customerLastName);
+        c.setName(customerRequest.customerFirstName);
+        c.setSurname(customerRequest.customerLastName);
 //        c.setCustomerType(CustomerType.COMPTANT);
-        c.setCustomerPhoneNumber(customerRequest.customerPhoneNumber);
-        c.setCustomerAddress(customerRequest.customerAddress);
+        c.setPhoneNumber(customerRequest.customerPhoneNumber);
+        c.setAddress(customerRequest.customerAddress);
 //        c.setAccount(account);
 
         customerService.createCustomer(c);

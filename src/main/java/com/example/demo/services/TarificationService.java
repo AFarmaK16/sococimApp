@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.beans.Operator;
+import com.example.demo.beans.Product;
 import com.example.demo.beans.Tarification;
 import com.example.demo.dao.TarificationRepository;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ public class TarificationService {
         this.tarificationRepository = tarificationRepository;
     }
     public List<Tarification> getAllTarifications(){
-       return  tarificationRepository.findAll();
+       return  tarificationRepository.findTarificationByValidityIsTrue();
     }
     public Tarification getTarificationByID(Integer id){
         Optional<Tarification> tarification = tarificationRepository.findById(id);
@@ -26,9 +26,20 @@ public class TarificationService {
             return null;
     }
     public void addTarification(Tarification tarification){
+        tarification.setValidity(true);
         tarificationRepository.save(tarification);
     }
     public void delTarification(Integer id){
-        tarificationRepository.deleteById(id);
+        Tarification tarification = null;
+        Optional<Tarification> optionalTarification = tarificationRepository.findById(id);
+        if(optionalTarification.isPresent())  //test si le code de hashage existe
+        {
+            tarification = optionalTarification.get();
+            tarification.setValidity(false);
+            tarificationRepository.save(tarification);
+        }
     }
+//    public void delTarification(Integer id){
+//        tarificationRepository.deleteById(id);
+//    }
 }

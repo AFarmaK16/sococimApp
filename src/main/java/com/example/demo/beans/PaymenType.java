@@ -11,14 +11,15 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Getter
 @Setter
-@Entity
-public class Bank implements Serializable {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Integer id;
-        private String nom;
+@AllArgsConstructor
+@NoArgsConstructor
+public class PaymenType implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String libelle;
+    private boolean validity;
 }

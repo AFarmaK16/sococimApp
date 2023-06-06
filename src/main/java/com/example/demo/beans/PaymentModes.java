@@ -1,5 +1,6 @@
 package com.example.demo.beans;
 
+import com.example.demo.enums.PaymentMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,10 +16,11 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Operator implements Serializable {
+public class PaymentModes implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer operator_id;
-    private String operator_name;
-    private boolean operator_validity= false; //TODO SET OPERATOR VALIDITY TO TRUE
+    private Integer id;
+    private String name;
+    private boolean validity = true; //TODO SET OPERATOR VALIDITY TO TRUE
+    private PaymentMode type;
 }

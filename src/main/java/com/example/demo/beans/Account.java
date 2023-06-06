@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -22,13 +21,12 @@ import java.util.Set;
 public class Account implements Serializable, UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idAccount;
+    private Integer id;
     //TODO ajouter un attribut qui est initialiser a 0 pour l'authentification (les tentatives), si more than 3 bloquer le compte
     private  String username;
     private  String password;
     private RoleType role;
     private Date dateOuverture = new Date();
-    private  boolean account_validity = true;
     private boolean first_Logged = true;
     private GrantedAuthority grantedAuthorities;
     @OneToOne(cascade = CascadeType.ALL)
@@ -38,9 +36,9 @@ public class Account implements Serializable, UserDetails {
 //    private  Set<? extends GrantedAuthority> grantedAuthorities;
 //    private final Set<? extends  GrantedAuthority> grantedAuthorities;
     private  boolean isAccountNonExpired;
-    private  boolean isAccountNonLocked;
+    private  boolean accountNonLocked;//On jouera sur cet attribut au blocage de l'utilisateur
     private  boolean isCredentialsNonExpired;
-    private  boolean isEnabled;
+    private  boolean enabled = true; //On jouera sur cet attribut a la suppression de l'utilisateur
 
 
     @Override
@@ -65,7 +63,7 @@ public class Account implements Serializable, UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return isAccountNonLocked;
+        return accountNonLocked;
     }
 
     @Override
@@ -75,7 +73,7 @@ public class Account implements Serializable, UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isEnabled;
+        return enabled;
     }
     //Will be used to enable or disable an account rather than deleting it
    // private boolean enabled = true;

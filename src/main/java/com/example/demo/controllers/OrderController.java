@@ -1,19 +1,13 @@
 package com.example.demo.controllers;
 
 import com.example.demo.beans.Customer;
-import com.example.demo.beans.Operator;
 import com.example.demo.beans.Orders;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
-import com.example.demo.enums.Payment_Type;
 import com.example.demo.services.CustomerService;
 import com.example.demo.services.OrderService;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToOne;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -64,6 +58,11 @@ public class OrderController {
         //3.If user exist
         //4.grab some metadata from file if any
         //Store the image
+        //Check if size doesn't exceed 1Mo
+        if (justificatif.getSize() > 1024 * 1024) {
+            // File size exceeds the limit
+            throw new IllegalArgumentException("File size exceeds the limit");
+        }
 
 
 
@@ -91,9 +90,9 @@ public class OrderController {
 //        System.out.println(deliveryRequest);
         Orders savedOrder = orderService.createOrders(orderRequest,itemsList,factureRequest,deliveryRequest);
         //END MAPPING
-        Integer factureID = savedOrder.getFacture().getFacture_id();
+        Integer factureID = savedOrder.getFacture().getId();
         String fileExtension = justificatif.getOriginalFilename().substring(justificatif.getOriginalFilename().lastIndexOf("."));
-        String fileName = customer.getCustomerFirstName()+"_"+customer.getCustomerLastName()+"_"+customer.getCustomerID()+"_order"+savedOrder.getOrder_id()+fileExtension;
+        String fileName = customer.getName()+"_"+customer.getSurname()+"_"+customer.getCustomerID()+"_order"+savedOrder.getOrder_id()+fileExtension;
 
         //Save file to the justificatifs directory
         Path path = Paths.get(uploadDir+"/"+fileName);
@@ -154,14 +153,13 @@ public class OrderController {
     ) {};
     public record OrderItemRequest(
     Integer productId,
-    Integer quantity
+    Double quantity
     ){}
     public  record FactureRequest(
             PaymentStatus paymentStatus,
                                    Date payment_date,
      String payment_reference,
      Integer operator,
-     Integer payment_bank,
      Integer payment_mode){
 
     }
