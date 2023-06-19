@@ -12,10 +12,10 @@ import static com.example.demo.enums.ApplicationUserPermission.*;
 @Getter
 public enum ApplicationUserRole {
 
-    admin(Sets.newHashSet(MANAGE_USERS, MANAGE_ORDERS, LIST_USERS,MANAGE_PRODUCTS,LIST_CUSTOMERS,LIST_PRODUCTS)),
-    customer(Sets.newHashSet(ORDER_PRODUCT,LIST_PRODUCTS,ADD_CUSTOMER)) //for giving a set of permissions to a role
-    ,
-    commercial(Sets.newHashSet()) //meaning this user do not have yet permissions
+    ROLE_ADMIN(Sets.newHashSet(MANAGE_USERS)),
+    ROLE_ADV(Sets.newHashSet(MANAGE_CUSTOMERS, MANAGE_ORDERS,UPDATE_ORDERS, LIST_CUSTOMERS,LIST_ORDERS)),
+    ROLE_COMM(Sets.newHashSet(MANAGE_PRODUCTS,LIST_ORDERS,SETTING_ORDERS_PARAMS)), //meaning this user do not have yet permissions
+    ROLE_CUSTOMER(Sets.newHashSet(ORDER_PRODUCT,LIST_PRODUCTS,ADD_CUSTOMER)) //for giving a set of permissions to a role
     ;
     private final Set<ApplicationUserPermission> permissionSet;
 
