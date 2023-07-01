@@ -4,6 +4,8 @@ import com.example.demo.auth.ApplicationUserService;
 import com.example.demo.auth.LoginAttemptService;
 import com.example.demo.dao.AccountRepository;
 import com.example.demo.services.EmailService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SimpleSavedRequest;
 
 @Configuration  @RequiredArgsConstructor
 public class ApplicationConfig {
@@ -48,7 +53,21 @@ public class ApplicationConfig {
 //        System.out.println("Provider 😩 "+provider);
         return provider;
     }
+    @Bean
+    public RequestCache refererRequestCache() {
+        return new HttpSessionRequestCache() {
+            @Override
+            public void saveRequest(HttpServletRequest request, HttpServletResponse response) {
+                String referrer = request.getHeader("referer");
+                if (referrer == null) {
+                    referrer = request.getRequestURL().toString();
+                }
+                request.getSession().setAttribute("SPRING_SECURITY_SAVED_REQUEST",
+                        new SimpleSavedRequest(referrer));
 
+            }
+        };
+    }
 
 //    @Bean
 //    public PasswordEncoder passwordEncoder(){
