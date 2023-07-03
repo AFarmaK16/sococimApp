@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -22,7 +23,10 @@ public class Facture implements Serializable {
     private Integer id;
 //TODO Ajouter un atttribut pour renommer le justificatif sous forme de CUSTOMERNAME_ORDERID_"JUSTIF"
 
-    private String justificatifURI;
+    @ElementCollection
+    private  List<String> justificatifURIs;
+
+//    private String justificatifURI;
     private Date payment_date ;
     private PaymentStatus paymentStatus;
     private String payment_reference;

@@ -1,10 +1,13 @@
 package com.example.demo.controllers;
 
+import com.example.demo.beans.Account;
 import com.example.demo.beans.Customer;
 import com.example.demo.beans.Orders;
 import com.example.demo.services.CustomerService;
 import com.example.demo.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +30,9 @@ public class CustomerController {
     //Retrieve all orders for the specified customer
     @GetMapping("/{customerID}/orders/all")//In customer controller🙂
     private List<Orders> getCustomerOrders(@PathVariable("customerID") Integer customerID){
-        return orderService.getCustomerOrders(customerID);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Customer customer = ((Account) authentication.getPrincipal()).getCustomer();
+        return orderService.getCustomerOrders(customer.getCustomerID());
     }
     //Retrieve order with "orderId"for the specified customer
     @GetMapping("/{customerID}/orders/{orderID}")

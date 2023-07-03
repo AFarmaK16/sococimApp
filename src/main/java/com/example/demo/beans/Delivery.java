@@ -20,6 +20,9 @@ public class Delivery  implements Serializable {
     @OneToOne( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private Destination destination;
     private String delivery_comment;
+    private String truckIM;
+    private String driver;
+    private Date deliverDate;
     private boolean isRendu;
     private boolean isDecharged;
 

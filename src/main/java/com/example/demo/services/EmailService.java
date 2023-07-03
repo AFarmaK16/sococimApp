@@ -1,11 +1,13 @@
 package com.example.demo.services;
 
+import com.example.demo.beans.Orders;
 import com.sun.mail.smtp.SMTPTransport;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,13 +18,13 @@ import java.util.Properties;
 import static com.example.demo.constant.EmailConstant.*;
 
 
-@Service
+@Service @RequiredArgsConstructor
 public class EmailService {
-    public ResponseEntity<String> sendEmail(String firstName, String email) throws MessagingException {
-        System.out.println("SENDING EMAIL TO "+firstName+" CAUSE LOCKED");
-        email="farmakane@esp.sn";
+    private final OrderService orderService;
+    public ResponseEntity<String> sendEmail(String firstName, String email,String emailText,String emailSubject) throws MessagingException {
+//        email="farmakane@esp.sn";
         try {
-            Message message = createAccountLockedEmail(firstName, email);
+            Message message = createEmail(firstName, email, emailText, emailSubject);
             SMTPTransport smtpTransport = (SMTPTransport) getEmailSession().getTransport(MAIL_PROTOCOL);
             smtpTransport.connect(GMAIL_SMTP_SERVER, USERNAME, PASSWORD);
             smtpTransport.sendMessage(message, message.getAllRecipients());
@@ -33,23 +35,25 @@ public class EmailService {
          catch (Exception e) {
              return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de l'envoie du mail!");
         }
-
     }
-    private Message createAccountLockedEmail(String firstName, String email) throws MessagingException {
-
+    private Message createEmail(String firstName, String email,String emailText,String emailSubject) throws MessagingException {
+        System.out.println("SENDING EMAIL TO "+firstName+" .....");
         Message message = new MimeMessage(getEmailSession());
         message.setFrom(new InternetAddress(FROM_EMAIL));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email, false));
 //        message.setRecipients(Message.RecipientType.TO,InternetAddress.parse(CC_EMAIL,false));
-        message.setSubject(EMAIL_SUBJECT);
+        message.setSubject(emailSubject);
         message.setText("Bonjour " + firstName + ",\n" +
-                "\n" +
-                "Nous regrettons de vous informer que votre compte a été bloqué en raison de nombreuses tentatives infructueuses. Votre sécurité est notre priorité, et cette mesure a été prise pour protéger votre compte.\n" +
-                "\n" +
-                "Pour résoudre ce problème et réactiver votre compte, veuillez contacter notre service commercial au numéro suivant : [7720...]. Nos représentants se feront un plaisir de vous assister  dans le processus de déblocage de votre compte.\n" +
-                "\n" +
-                "Nous nous excusons pour les désagréments que cela a pu causer et vous remercions de votre compréhension.\n" +
-                "\n" +
+                emailText);
+        message.setSentDate(new Date());
+        message.saveChanges();
+        return message;
+
+
+    }
+    public String createOrderEmailText(Integer orderId) {
+        Orders order = orderService.getOrdersById(orderId);
+       String message=  "\n\nCommande N°"+order.getOrder_id()+ "\n" +"Date: "+order.getOrder_Date()+
                 "Cordialement,\n" +
                 "L'équipe du support client\n" +
                 "\n" +
@@ -57,13 +61,12 @@ public class EmailService {
                 "\n" +
                 "\n" +
                 "\n" +
-                "\n");
-        message.setSentDate(new Date());
-        message.saveChanges();
+                "\n";
         return message;
 
 
     }
+
     private Session getEmailSession(){
         Properties properties = System.getProperties();
         properties.put(SMTP_HOST,GMAIL_SMTP_SERVER);

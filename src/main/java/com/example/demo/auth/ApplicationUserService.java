@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import static com.example.demo.constant.EmailConstant.ACCOUNT_LOCKED_EMAIL;
+import static com.example.demo.constant.EmailConstant.ACCOUNT_LOCKED_EMAIL_SUBJECT;
+
 @Service
 @RequiredArgsConstructor
 public class ApplicationUserService  implements UserDetailsService {
@@ -104,10 +107,10 @@ public class ApplicationUserService  implements UserDetailsService {
 //                blockAccount(account.getId());
 //                System.out.println("blocked :>>> MAX LOGIN ATTEMPT EXCEEDED");
                     if (account.getUser()!= null){
-                        emailService.sendEmail(account.getUser().getName(),null);
+                        emailService.sendEmail(account.getUser().getName(),null,ACCOUNT_LOCKED_EMAIL,ACCOUNT_LOCKED_EMAIL_SUBJECT);
                     }
                     else if (account.getCustomer()!= null){
-                        emailService.sendEmail(account.getCustomer().getName(),null);
+                        emailService.sendEmail(account.getCustomer().getName(),null,ACCOUNT_LOCKED_EMAIL,ACCOUNT_LOCKED_EMAIL_SUBJECT);
 
                     }
                     throw new RuntimeException("blocked :>>> MAX LOGIN ATTEMPT EXCEEDED");

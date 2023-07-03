@@ -64,7 +64,7 @@ public class AuthenticationController  {
     public ResponseEntity<AuthenticationResponse> register( //TODO look at null val
             @RequestBody AccountRequest request
     ){
-        return ResponseEntity.ok(  accountService.addUser(request,null))
+        return ResponseEntity.ok(  accountService.addUser(request,null,"passer"))
       ;
     }
     @PostMapping("/authenticate")
@@ -131,11 +131,11 @@ public class AuthenticationController  {
                 .httpOnly(true)
                 .sameSite("Strict")
                 .path("/")
-                .maxAge(Duration.buildBySeconds(1000*60*15).getMilliseconds())
+                .maxAge(Duration.buildBySeconds(1000*60*40).getMilliseconds())
                 .build();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthenticationResponse(token,account.getUsername(),account.getRole(),account.getId()));
+                .body(new AuthenticationResponse(token,account.getUsername(),account.getRole(),account.getId(), account.isFirst_Logged()));
 //        return new ResponseEntity<>("This user's verification has been completed successfully", HttpStatus.OK);
 
     }

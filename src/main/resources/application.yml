@@ -23,5 +23,19 @@ spring:
       max-file-size: 1MB
       resolve-lazily: false
       max-request-size: 1MB
+  mail:
+    host: smtp.gmail.com
+    port: 645
+    username: socindustries12@gmail.com
+    password: yscgyvakovrtaznl
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable:true
+    protocol: smtp
+
 server:
   port: 8081
+

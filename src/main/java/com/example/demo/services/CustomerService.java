@@ -23,6 +23,9 @@ public class CustomerService {
     public Customer getCustomer(Integer id){
         return customerRepository.findById(id).get();
     }
+//    public Customer getCustomerByUserName(Integer id){
+//        return customerRepository.findById(id).get();
+//    }
     //CREATE
     //TODO avoid creating a user with same information and more than one account and RETURN BOOLEAN AFTER CREATING
     //😋

@@ -1,23 +1,25 @@
 package com.example.demo.beans;
 
+import com.example.demo.enums.ApplicationUserRole;
 import com.example.demo.enums.RoleType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+//@RequiredArgsConstructor
 public class Account implements Serializable, UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +27,12 @@ public class Account implements Serializable, UserDetails {
     //TODO ajouter un attribut qui est initialiser a 0 pour l'authentification (les tentatives), si more than 3 bloquer le compte
     private  String username;
     private  String password;
-    private RoleType role;
+    private ApplicationUserRole role;
     private Date dateOuverture = new Date();
     private boolean first_Logged = true;
-    private GrantedAuthority grantedAuthorities;
+//    private  GrantedAuthority grantedAuthorities;
+//    @ElementCollection
+//    private Collection<? extends GrantedAuthority> grantedAuthorities;
     @OneToOne(cascade = CascadeType.ALL)
     private User user;
     @OneToOne(cascade = CascadeType.ALL)
@@ -43,7 +47,7 @@ public class Account implements Serializable, UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return role.getGrantedAuthorities();
     }
 
     @Override

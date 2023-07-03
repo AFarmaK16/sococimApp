@@ -66,19 +66,23 @@ public class AppSecurityConfig {
                 //request for all
 
                 .requestMatchers(HttpMethod.GET,"/api/v1/accounts/**","/api/v1/orderSettings/**").hasAnyRole(String.valueOf(ApplicationUserRole.ADMIN),
-                        String.valueOf(ApplicationUserRole.COMMERCIAL),String.valueOf(ApplicationUserRole.CUSTOMER))
+                        String.valueOf(ApplicationUserRole.COMMERCIAL),String.valueOf(ApplicationUserRole.CUSTOMER),String.valueOf(ApplicationUserRole.ADV))
                 .requestMatchers(HttpMethod.POST,"/api/v1/accounts/account/**").hasRole(String.valueOf(ApplicationUserRole.ADMIN))
+               .requestMatchers(HttpMethod.PUT,"/api/v1/accounts/account/**").hasAnyRole(String.valueOf(ApplicationUserRole.ADMIN),
+                        String.valueOf(ApplicationUserRole.COMMERCIAL),String.valueOf(ApplicationUserRole.CUSTOMER),String.valueOf(ApplicationUserRole.ADV))
                 //request for all
 //ORDERS
                 .requestMatchers(HttpMethod.GET,"/api/v1/customers/**","/api/v1/orders/downloadFile/**").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/v1/orders/add","/api/v1/orders/calculateTotal").hasRole(String.valueOf(ApplicationUserRole.CUSTOMER))
-                .requestMatchers(HttpMethod.PUT,"/api/v1/orders/validate/**").hasRole(String.valueOf(ApplicationUserRole.ADV))
+                .requestMatchers(HttpMethod.PUT,"/api/v1/orders/**").hasAnyRole(String.valueOf(ApplicationUserRole.ADV),String.valueOf(ApplicationUserRole.COMMERCIAL))
                 .requestMatchers(HttpMethod.GET,"/api/v1/orders/lists/**").hasAnyRole(String.valueOf(ApplicationUserRole.ADV),String.valueOf(ApplicationUserRole.COMMERCIAL))
 // SETTINGS
                 .requestMatchers(HttpMethod.POST,"/api/v1/orderSettings/**","/api/v1/products/add","/api/v1/tarifs/new","/api/v1/payModes/new").hasRole(String.valueOf(ApplicationUserRole.ADMIN))
 //                .requestMatchers(HttpMethod.GET,"/api/v1/tarifs/new").hasRole(String.valueOf(ApplicationUserRole.ADMIN))
 
-                .requestMatchers(HttpMethod.PUT,"/api/v1/orderSettings/**","/api/v1/products/**","/api/v1/tarifs/delete/**","/api/v1/payModes/delete/**").hasRole(String.valueOf(ApplicationUserRole.ADMIN))
+                .requestMatchers(HttpMethod.PUT,"/api/v1/orderSettings/**","/api/v1/products/**","/api/v1/tarifs/delete/**","/api/v1/payModes/delete/**","/api/v1/accounts/**").hasRole(String.valueOf(ApplicationUserRole.ADMIN))
+                .requestMatchers(HttpMethod.PUT,"/api/v1/accounts/**").hasAnyRole(String.valueOf(ApplicationUserRole.ADMIN),
+                String.valueOf(ApplicationUserRole.COMMERCIAL),String.valueOf(ApplicationUserRole.CUSTOMER),String.valueOf(ApplicationUserRole.ADV))
 
                 .and()
                 .sessionManagement()

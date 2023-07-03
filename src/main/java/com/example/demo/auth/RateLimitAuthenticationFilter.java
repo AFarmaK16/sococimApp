@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +21,7 @@ import java.util.Map;
 public class RateLimitAuthenticationFilter  {
 
     private final int MAX_LOGIN_ATTEMPTS = 3;
-    private final RateLimitAuthService rateLimitAuthService;
+    private final LoginAttemptService loginAttemptService;
     private final JwtService jwtService;
     private final long LOGIN_ATTEMPT_TIMEOUT = 1 * 60 * 1000; // 10 minutes in milliseconds
 

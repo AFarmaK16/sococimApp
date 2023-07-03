@@ -11,10 +11,13 @@ public interface AccountRepository extends JpaRepository<Account,Integer> {
     //TODO FOR FOLLOWING WILL HAVE TO DO IT USING @QUERY CAUSE OF THEIR NAME (STARTING WITH 'is'😢😢😢)
 //    Optional<Account> findAccountByUsernameAndAccountNonLockedIsTrue(String login); // retrieve all non-locked user accounts
     Optional<Account> findAccountByUsername(String username); // retrieve all non-locked user accounts
+    Optional<Account> findAccountByCustomer_CustomerID(Integer id); // retrieve all non-locked user accounts
 //    Optional<Account> findAccountByAccountNonLocked(String login);
    // List<Account> findAccountByEnabledIsTrue(); // retrieve all not-deleted users
     //Return all not locked accounts for authentication Purpose
     List<Account> findAccountByRole(RoleType roleType);
+    Optional<Account> findAccountByUsernameAndEnabledIsTrue(String username); // retrieve all non-locked user accounts
+
     List<Account> findAccountByEnabledIsTrue();
     List<Account> findAccountByEnabledIsTrueAndAccountNonLockedIsTrue();
 

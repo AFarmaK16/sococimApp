@@ -3,6 +3,7 @@ package com.example.demo.services;
 
 import com.example.demo.beans.*;
 import com.example.demo.controllers.OrderController;
+import com.example.demo.controllers.OrderController.*;
 import com.example.demo.dao.*;
 import com.example.demo.dao.PaymentModesRepository;
 import com.example.demo.enums.OrderStatus;
@@ -41,14 +42,14 @@ public class OrderService {
 //    }
 
 
-    public void updateFacture(String justificatifURI,Integer factureID){
+    public void updateFacture(List<String> justificatifURI,Integer factureID){
         Facture facture= factureRepository.findById(factureID).get();
-        facture.setJustificatifURI(justificatifURI);
+        facture.setJustificatifURIs(justificatifURI);
         factureRepository.save(facture);
     }
-    public Orders createOrders(OrderController.OrderRequest orderRequest, List<OrderController.OrderItemRequest> items, OrderController.FactureRequest factureRequest, OrderController.DeliveryRequest deliveryRequest) throws IOException {
+    public Orders createOrders(OrderRequest orderRequest, List<OrderItemRequest> items, FactureRequest factureRequest, DeliveryRequest deliveryRequest, Customer customer) throws IOException {
         //Retrieve the customer from database
-        Customer customer = customerRepository.findById(orderRequest.customerID()).get();
+//        Customer customer = customerRepository.findById(orderRequest.customerID()).get();
 
         Facture facture = new Facture();
 //        facture.setBank(
@@ -85,7 +86,7 @@ public class OrderService {
         factureRepository.save(facture);
         Orders savedOrder = orderRepository.save(orders);
 
-        for (OrderController.OrderItemRequest item : items) {
+        for (OrderItemRequest item : items) {
             //Retrieve product from database
             Product product = productRepository.findById(item.productId()).get();
             OrderItems orderItems = new OrderItems();
@@ -105,6 +106,39 @@ public class OrderService {
 //        return orderRepository.save(orders);
     }
 
+    public int calculateTotal( List<OrderItemRequest> items,DeliveryRequest deliveryRequest ,boolean isDecharged) throws IOException {
+
+int total =0;
+int tht =0;
+double tva = 0.18;
+int redevance_habitat = 2000; //totalquantity * 2000
+int taxe_consommation =  3000; //3000 * totalquantity
+double totalQuantity =0;
+int deliveryPrice =0;
+int totalTva = 0;
+int dechargement=0;
+
+        for (OrderItemRequest item : items) {
+            //Retrieve product from database
+            Product product = productRepository.findById(item.productId()).get();
+            tht +=(product.getTarification().getMontant()* item.quantity());
+            totalQuantity+=item.quantity();
+
+        }
+        if (deliveryRequest.isRendu()){
+            deliveryPrice= (int) (destinationRepository.findById(deliveryRequest.delivery_destination()).get().getTarification().getMontant()* totalQuantity);
+        }
+        if (isDecharged){
+            dechargement = (int) (totalQuantity * 400);
+        }
+
+        totalTva = (int) ((tht* tva)+(deliveryPrice * tva)+(dechargement * tva)+ redevance_habitat * totalQuantity * tva + (taxe_consommation * totalQuantity * tva));
+
+    total= (int) ((redevance_habitat* totalQuantity) + (taxe_consommation * totalQuantity) + tht + totalTva +dechargement +deliveryPrice);
+    System.out.println("LA TOTALE EST "+total);
+        return total;
+
+    }
 
     //READ [ALL] DONE😋❌ ADMIN
     public List<Orders> getAllOrders() {
@@ -123,7 +157,7 @@ public class OrderService {
         return orderRepository.findOrdersByCustomerCustomerIDAndOrder_id(customerID,orderID);
     }
     //UPDATE
-    public void updateOrder(Integer id) {
+    public Orders updateOrder(Integer id) {
       Orders order = null;
         Optional<Orders> optionalOrders = orderRepository.findById(id);
         if(optionalOrders.isPresent())  //test si le code de hashage existe
@@ -131,9 +165,26 @@ public class OrderService {
             order = optionalOrders.get(); //which is in customer type
             order.setOrder_status(OrderStatus.VALIDEE);
             orderRepository.save(order);
-        }
-    }
 
+        }
+        return  order;
+    }
+    //MARK ORDER AS DELIVERED
+    public Orders updateOrderState(Integer id, SetDeliveryRequest setDeliveryRequest) {
+        Orders order = null;
+        Optional<Orders> optionalOrders = orderRepository.findById(id);
+        if(optionalOrders.isPresent())  //test si le code de hashage existe
+        {
+            order = optionalOrders.get(); //which is in customer type
+            order.getDelivery().setDriver(setDeliveryRequest.driver());
+            order.getDelivery().setTruckIM(setDeliveryRequest.truckIM());
+            order.getDelivery().setDeliverDate(setDeliveryRequest.deliverDate());
+            order.setOrder_status(OrderStatus.EN_ATTENTE_DE_LIVRAISON);
+            orderRepository.save(order);
+
+        }
+        return  order;
+    }
     //DELETE ❌ CUSTOMER TODO SEND A NOTIFICATION TO THE ADMIN TO INFORM AN ANNULATION FOR AN ORDER
     public void deleteById(Integer id) {
          orderRepository.deleteById(id);
