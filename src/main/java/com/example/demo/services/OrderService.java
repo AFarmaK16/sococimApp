@@ -9,6 +9,7 @@ import com.example.demo.dao.PaymentModesRepository;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -164,22 +165,51 @@ int dechargement=0;
         {
             order = optionalOrders.get(); //which is in customer type
             order.setOrder_status(OrderStatus.VALIDEE);
+            order.getFacture().setPaymentStatus(PaymentStatus.PAYEE);
             orderRepository.save(order);
 
         }
         return  order;
     }
     //MARK ORDER AS DELIVERED
+    public  Double calculateTotalQuantity(List<OrderItems> orderItems){
+        double totalQuantity = 0;
+
+        for (OrderItems orderItem : orderItems) {
+            totalQuantity += orderItem.getQuantity();
+        }
+
+        return totalQuantity;
+    }
     public Orders updateOrderState(Integer id, SetDeliveryRequest setDeliveryRequest) {
+        System.out.println("DELIVER PROCESS  ");
+
         Orders order = null;
         Optional<Orders> optionalOrders = orderRepository.findById(id);
+        System.out.println(optionalOrders);
         if(optionalOrders.isPresent())  //test si le code de hashage existe
         {
+            System.out.println("Start PPIMT ");
+            System.out.println(setDeliveryRequest.deliveredQuantity());
+            System.out.println((setDeliveryRequest.deliveredQuantity()+order.getDelivery().getDeliveredQuantity()));
+
             order = optionalOrders.get(); //which is in customer type
             order.getDelivery().setDriver(setDeliveryRequest.driver());
             order.getDelivery().setTruckIM(setDeliveryRequest.truckIM());
             order.getDelivery().setDeliverDate(setDeliveryRequest.deliverDate());
-            order.setOrder_status(OrderStatus.EN_ATTENTE_DE_LIVRAISON);
+            order.getDelivery().setDeliveredQuantity(order.getDelivery().getDeliveredQuantity()+setDeliveryRequest.deliveredQuantity());
+            List<OrderItems> orderItems = order.getOrderItems();
+            Double totalQuantity = calculateTotalQuantity(orderItems);
+            System.out.println("Total Quantity: " + totalQuantity);
+            System.out.println("Current  Quantity: " + setDeliveryRequest.deliveredQuantity()+order.getDelivery().getDeliveredQuantity());
+            if ((setDeliveryRequest.deliveredQuantity()+order.getDelivery().getDeliveredQuantity()) < totalQuantity){
+
+                order.setOrder_status(OrderStatus.PARTIELLEMENT_LIVREE);
+            }
+            else{
+                order.setOrder_status(OrderStatus.LIVREE);
+
+            }
             orderRepository.save(order);
 
         }
