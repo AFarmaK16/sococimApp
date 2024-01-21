@@ -5,7 +5,6 @@ public class EmailConstant {
     public static final String USERNAME = "socindustries12@gmail.com";
     public static final String PASSWORD = " ";
     public static final String FROM_EMAIL = "socindustries12@gmail.com";
-//    public static final String CC_EMAIL = "socpass12";
     public static final String ACCOUNT_LOCKED_EMAIL_SUBJECT = "Compte Bloqué";
 //    public static final String EMAIL_SUBJECT = "Votre compte a été bloque, veuillez contacter notre commercial au 77...";
     public static final String GMAIL_SMTP_SERVER = "smtp.gmail.com";
