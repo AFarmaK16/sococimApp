@@ -3,7 +3,7 @@ package com.example.demo.constant;
 public class EmailConstant {
     public static final String MAIL_PROTOCOL = "smtps";
     public static final String USERNAME = "socindustries12@gmail.com";
-    public static final String PASSWORD = "yscgyvakovrtaznl";
+    public static final String PASSWORD = " ";
     public static final String FROM_EMAIL = "socindustries12@gmail.com";
 //    public static final String CC_EMAIL = "socpass12";
     public static final String ACCOUNT_LOCKED_EMAIL_SUBJECT = "Compte Bloqué";
